@@ -177,12 +177,19 @@ if not COE_has_been_downloaded:
 else:
     print("The COE data is already downloaded, we don't need to redownload it.")
 # 3.2 清洗xls数据
+# 3.2.1 用pandas读取xls数据文件
 Excel_file = pd.ExcelFile(loc)
+# 3.2.2 获取xls文件的sheet_names, 列表
 print(Excel_file.sheet_names)
 # [u'COE data']
+# 3.2.3 将coe数据转为pandas DataFrame类型 并获取列名列表
 spreadsheet = Excel_file.parse('COE data')
+list_of_columns_of_spreadsheet = spreadsheet.columns.to_list()
 print(spreadsheet.info())
-
+# 3.2.4 获取目标变量数据(DataFrame)
+# target 目标变量是历史价格 'COE$'
+data = spreadsheet['COE$']
+print(data.head())
 
 # below is something else
 if Comment:
