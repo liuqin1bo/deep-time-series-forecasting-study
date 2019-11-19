@@ -13,6 +13,7 @@ __author__='Qinbo Liu'
 Comment = False
 Code = True
 
+import time
 import numpy as np
 np.set_printoptions(threshold = np.infty)
 import pandas as pd
@@ -31,8 +32,10 @@ consider diffference equation:
 y_t=alpha + beta * y_{t-1} + epsilon_t, 
 y_0=1, alpha=-0.25, beta=0.95
 '''
-
+# Content 是代码目录, 可以作为输出文档
+Content = ''
 # 1. 熟悉pandas.Series 的时序数据操作
+Content += "1. 熟悉pandas.Series 的时序数据操作\n"
 seed=2018
 np.random.seed(seed)
 y_0=1.0
@@ -75,6 +78,10 @@ plt.show()
 # 也提供了相应的统计和学习模块，比如我们要拟合函数 y = x**2
 # 2.1.1
 # 首先生成数据集 x 和标准数据 y = x **2
+Content += "2.1\n"
+Content += "一直一来，我们都是用 TensorFlow 框架搭建深度神经网络，但其实 python\n"
+Content += "2.1.1\n"
+Content += "首先生成数据集 x 和标准数据 y = x **2\n"
 random.seed(2016)
 sample_size =50
 sample = pd.Series(random.sample(\
@@ -90,6 +97,8 @@ if Comment:
     print(x.describe())
 # 2.1.2
 # 然后将数据加载进 dataSet ,格式是 [ ([x_input],[y_input]), ([x_input],[y_input]) .... ]
+Content += "2.1.2\n"
+Content += "然后将数据加载进 dataSet ,格式是 [ ([x_input],[y_input]), ([x_input],[y_input]) .... ]\n"
 count = 0
 dataSet = [([x.ix[count]], [y.ix[count]])]
 count = 1
@@ -100,6 +109,8 @@ while count < sample_size:
     count += 1
 # 2.1.3
 # 导入 neuralpy 包搭建神经网络并训练
+Content += "2.1.3\n"
+Content += "导入 neuralpy 包搭建神经网络并训练\n"
 import neuralpy
 nn = neuralpy.Network(1, 3, 7, 1)
 ''' 包含两个隐藏层，分别含有 3 个节点和 7 个节点，其中输入一个节点，输出一个节点 '''
@@ -113,6 +124,7 @@ nn.train(dataSet,epochs,learning_rate)
 
 # 2.1.4
 # 评估模型表现
+Content += "2.1.4\n评估模型表现\n"
 count = 0
 forecast = []
 while count < sample_size:
@@ -128,6 +140,8 @@ print("The MSE for the forecast is: ", round(mse, 4))
 # 2.1.5
 # 模型表现做图
 # 下面三条命令应该可以让图形可以显示中文， 这里我先注释掉，下次重启后可以开放为代码
+Content += "2.1.5\n模型表现做图\n"
+Content += "下面三条命令应该可以让图形可以显示中文， 这里我先注释掉，下次重启后可以开放为代码\n"
 if Code:
     from matplotlib.pylab import mpl
     mpl.rcParams['font.sans-serif'] = ['SimHei'] # 指定默认字体
@@ -142,7 +156,7 @@ if Code:
 
 myfont = ''  # 做图时预置的字体为空, 作为后面画图时的判断条件
 # 可以使用下面这种方式（置于代码前面）
-if Code: # Code -> 标题字体 SimSun; Comment -> 标题字体为 SimHei
+if Comment: # Code -> 标题字体 SimSun; Comment -> 标题字体为 SimHei
     import matplotlib
     # matplotlib.use('qt4agg')
     from matplotlib import font_manager
@@ -167,6 +181,9 @@ plt.show()
 # 3.1 时间数据描述
 # Certificate of Entitlement (COE), 上牌照, 价格是由一个 open bidding system决定的.
 # 我们获取这个价格的时间序列数据
+Content += "3. 第3章 时序深度神经网络\n3.1 " \
+           "时间数据描述\nCertificate of " \
+           "Entitlement (COE),\n我们获取这个价格的时间序列数据\n"
 print("\n\n\n******* 第3章 *******\n")
 COE_has_been_downloaded = True
 import urllib
@@ -178,6 +195,11 @@ else:
     print("The COE data is already downloaded, we don't need to redownload it.")
 # 3.2 清洗xls数据
 # 3.2.1 用pandas读取xls数据文件
+Content += "3.2 清洗xls数据\n3.2.1 用pandas读取xls数据文件\n3.2.2 " \
+           "获取xls文件的sheet_names, 列表\n3.2.3 " \
+           "将coe数据转为pandas DataFrame类型 并获取列名列表\n3.2.4" \
+           " 获取目标变量数据(DataFrame)\n(a)" \
+           " target 目标变量是历史价格 'COE$'\n(b) 调整错误数据\n"
 Excel_file = pd.ExcelFile(loc)
 # 3.2.2 获取xls文件的sheet_names, 列表
 print(Excel_file.sheet_names)
@@ -185,13 +207,76 @@ print(Excel_file.sheet_names)
 # 3.2.3 将coe数据转为pandas DataFrame类型 并获取列名列表
 spreadsheet = Excel_file.parse('COE data')
 list_of_columns_of_spreadsheet = spreadsheet.columns.to_list()
+print("list_of_columns is: \n", list_of_columns_of_spreadsheet)
 print(spreadsheet.info())
 # 3.2.4 获取目标变量数据(DataFrame)
-# target 目标变量是历史价格 'COE$'
+# (a) target 目标变量是历史价格 'COE$'
 data = spreadsheet['COE$']
 print(data.head())
+# (b) 调整错误数据
+#     打印错误日期段
+print(spreadsheet['DATE'][193:204])
+#     设定为正确日期
+spreadsheet.set_value(index=194, col='DATE', value='2004-02-15')
+spreadsheet.set_value(index=198, col='DATE', value='2004-04-15')
+spreadsheet.set_value(index=202, col='DATE', value='2004-06-15')
+# print(spreadsheet['DATE'][193:204])
+loc = './data/coe.csv'
+COE_CSV_HAS_GENERATED = True
+if not COE_CSV_HAS_GENERATED:
+    spreadsheet.to_csv(loc, index=None)
 
-# below is something else
+# 3.3此处为激活函数、梯度下降对学习
+Content += "3.3 此处为激活函数、梯度下降对学习\n"
+# 3.4 利用 sklearn preprocessing 对 目标变量 data 进行归一化
+Content += "3.4 利用 sklearn preprocessing 对 目标变量 data 进行归一化\n"
+from sklearn import preprocessing
+x = data
+x = np.array(x).reshape(len(x), )
+# np.log 取自然对数
+x = np.log(x) #x.shape = (265, ), x 是一个向量
+x = x.reshape(-1, 1)  # scaler.fit_transform 接受二维np.array参数
+# scaler = MinMaxScaler(copy=True, feature_range=(0, 1))
+scaler = preprocessing.MinMaxScaler(
+    feature_range=(0, 1))
+x = scaler.fit_transform(x)
+x = x.reshape(-1)  # 调整x shape 到之前 x.shape = (265,)
+print(round(x.min(), 2), round(x.max(), 2))
+
+# 3.5 考察偏自相关系数(Autocorrelation)
+Content += "3.5 考察偏自相关系数\n"
+from statsmodels.tsa.stattools import pacf
+x_pacf = pacf(x, nlags=5, method='ols')
+print(x_pacf)
+# 3.6 利用 nnet-ts 来进行下一个时间的价格预测, 预测的舒适区间为 ＋／－$1,500
+Content += "3.6 利用 nnet-ts 来进行下一个时间的价格预测, 预测的舒适区间为 ＋／－$1,500\n"
+from nnet_ts import *
+import os
+os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
+# 解决 libiomp5.dylib already initialized 的错误
+count = 0   # 计数器: 对ahead次数对循环
+ahead = 12  # 每次预测12个值
+pred = []  # 存储预测值
+while count < ahead:
+    end = len(x) - ahead + count
+    np.random.seed(2016)
+    tsnn = TimeSeriesNnet(hidden_layers=[7, 3],
+                          activation_functions=["tanh", "tanh"])
+    tsnn.fit(x[0: end], lag=1, epochs=100)
+    out = tsnn.predict_ahead(n_ahead=1)
+    print("Obs: ", count + 1, "x = ",
+          round(x[count], 4), " prediction = ", round(pd.Series(out), 4))
+    print("out is : ", out)
+    pred.append(out)
+    count += 1
+
+
+#time.sleep(2)
+print(Content)
+
+
+
+# 下面对代码与主题无关 below is something else
 if Comment:
     np.random.seed(2016)
     test_random_matrice=np.random.rand(3,4)
