@@ -527,12 +527,24 @@ if Chapter4NeedToRun:
     Content += "参考: http://pydoc.net/pyneurgen/0.3.1/pyneurgen.neuralnet/\n"
 
 # 5.
-# 第5章 循环神经网络入门
-# 5.1 时间数据描述
-# Certificate of Entitlement (COE), 上牌照, 价格是由一个 open bidding system决定的.
-# 我们获取这个价格的时间序列数据
-Chapter5NeedToRun = [False, True][1]
+# 第5章 循环神经网络入门(基于Keras)
+# 5.1 Keras, TensorFlow, Theano 的关系
 
+Chapter5NeedToRun = [False, True][1]
+Content += "5.\n第5章 循环神经网络入门\n"
+Content += "5.1 Keras, TensorFlow, Theano 的关系\n"
+
+
+# 6.
+# 第6章 循环神经网络进阶: Elman Neural Networks(含延滞层)
+# 6.1 Elman NN广泛应用于控制, 优化, 模式分类
+Content += "6.\n第6章 循环神经网络进阶: Elman Neural Networks(含延滞层)\n" \
+           "6.1 Elman NN广泛应用于控制, 优化, 模式分类\n"
+
+
+Content_txt_file = open("./Context.txt", "w")
+Content_txt_file.write("目录:\n%s" %Content)
+Content_txt_file.close()
 print(Content)
 elapsed = time.time() - start
 print("程序一共执行了 ", elapsed, "秒.")

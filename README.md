@@ -22,4 +22,6 @@ python=2.7 环境下 pip 安装 neuralpy (需要解决一些冲突问题)
 #### 2. 本项目参考书目为 `Deep Time Series Forecasting With Python`, 作者是 N.D. Lewis
 #### 3. 请自行解决 matplotlib 作图中文字体显示问题
 #### 4. 执行 deep_neural_modeling.py, 会在末尾打印一份过程描述文章(Content:字符串变量)
+##### 4.1 Content.txt 为详细目录
+##### 4.2 通过 `Chapte3NeedToRun = [False, True][1]` 来执行第3章节代码, 它同.
 #### 5. Contact liuqin1bo@126.com for more info.
