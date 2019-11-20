@@ -528,7 +528,34 @@ if Chapter4NeedToRun:
 
 # 5.
 # 第5章 循环神经网络入门(基于Keras)
-# 5.1 Keras, TensorFlow, Theano 的关系
+# 5.1 循环神经网络(RNN)的示意图
+Content += "5.1 循环神经网络(RNN)的示意图(演示200秒)\n"
+import matplotlib.image as mpimg  # 用于加载图片
+rnn_image = mpimg.imread("./pictures/rnn_image.png")
+plt.imshow(rnn_image)
+plt.axis('off')
+plt.show()
+import signal
+class InputTimeoutError(Exception):
+    pass
+def interrupted(signum, frame):
+    raise InputTimeoutError
+signal.signal(signal.SIGALRM, interrupted)
+signal.alarm(200)  # 设置自动停留时间
+try:
+    your_input = raw_input('请看rnn示意图, 200秒后自动跳过, 按任意键手动跳过:\n'
+                           '可以访问\n'
+                           'http://www.wildml.com/2015/09/'
+                           'recurrent-neural-networks-tutorial-part-1-introduction-to-rnns/\n'
+                           '以获得更多信息.\n\n')
+except InputTimeoutError:
+    print("\n观看结束.")
+    your_input = ''
+signal.alarm(0)  # 读到键盘输入的话重置信号
+print("\n您输入了: %s, 现在跳过rnn示意图学习" % your_input)
+time.sleep(3)
+
+# 5.2 Keras, TensorFlow, Theano 的关系
 
 Chapter5NeedToRun = [False, True][1]
 Content += "5.\n第5章 循环神经网络入门\n"

@@ -69,6 +69,7 @@ nn4.test_targets_activations给出测试部分实际值和预测值的pairs
 4.4.8.1 参考 (http://pyneurgen.sourceforge.net/tutorial_nn.html)
 作图:显示部分历史时间数据
 参考: http://pydoc.net/pyneurgen/0.3.1/pyneurgen.neuralnet/
+5.1 循环神经网络(RNN)的示意图(演示200秒)
 5.
 第5章 循环神经网络入门
 5.1 Keras, TensorFlow, Theano 的关系
