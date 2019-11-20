@@ -19,9 +19,11 @@ np.set_printoptions(threshold = np.infty)
 import pandas as pd
 import matplotlib.pyplot as plt
 import random
-
+import warnings
+warnings.filterwarnings('ignore')
 
 '''
+formula
 x=np.linspace(-5,5,1000)
 y=[1/(1+np.exp(-i)) for i in x]
 plt.plot(x,y)
@@ -32,6 +34,8 @@ consider diffference equation:
 y_t=alpha + beta * y_{t-1} + epsilon_t, 
 y_0=1, alpha=-0.25, beta=0.95
 '''
+
+start = time.time()  # 我们计算程序一共花了多久
 # Content 是代码目录, 可以作为输出文档
 Content = ''
 # 1. 熟悉pandas.Series 的时序数据操作
@@ -250,29 +254,95 @@ x_pacf = pacf(x, nlags=5, method='ols')
 print(x_pacf)
 # 3.6 利用 nnet-ts 来进行下一个时间的价格预测, 预测的舒适区间为 ＋／－$1,500
 Content += "3.6 利用 nnet-ts 来进行下一个时间的价格预测, 预测的舒适区间为 ＋／－$1,500\n"
+#import tensorflow as tf
 from nnet_ts import *
 import os
 os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
+# 去除 tensorflow 的log信息
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'  # or any {'0', '1', '2'}
+# 去除打印区域的日志信息: (DEBUG, INFO, WARNING, ERROR, EMERGENCY 等 Level)
+import logging
+Logger = logging.getLogger()
+Logger.setLevel(level=logging.WARNING)  # 只显示 LEVEL >= WARNING 的日志信息
 # 解决 libiomp5.dylib already initialized 的错误
+# 3.6.1 利用TimeSeriesNet(hidden_layers = [7, 3] 预测下次价格(连续预测12次))
+Content += "3.6.1 利用TimeSeriesNet(hidden_layers = [7, 3] 预测下次价格(连续预测12次))\n"
 count = 0   # 计数器: 对ahead次数对循环
 ahead = 12  # 每次预测12个值
-pred = []  # 存储预测值
+forecast = []  # 存储预测值, 12 个数字组成的数组
 while count < ahead:
     end = len(x) - ahead + count
     np.random.seed(2016)
     tsnn = TimeSeriesNnet(hidden_layers=[7, 3],
                           activation_functions=["tanh", "tanh"])
     tsnn.fit(x[0: end], lag=1, epochs=100)
+    # out 是含有一个数值变量的列表
     out = tsnn.predict_ahead(n_ahead=1)
     print("Obs: ", count + 1, "x = ",
           round(x[count], 4), " prediction = ", round(pd.Series(out), 4))
-    print("out is : ", out)
-    pred.append(out)
+    
+    forecast.append(out[0])
     count += 1
 
+forecast1 = scaler.inverse_transform(np.array(forecast).reshape((-1, 1)))
+forecast1 = np.exp(forecast1)
+print(np.round(forecast1, 1))
 
+
+# 3.6.2 做预测效果比较图
+Content += "3.6.2 做预测效果比较图\n"
+# (a) 所有时间数据都显示
+Content += "(a) 所有时间数据都显示\n"
+plt.plot(range(0, ahead), forecast1.reshape(-1), '-r', label=u"预测", linewidth=1)
+real = np.array(data).reshape(-1)
+plt.plot(range(0, ahead), real[len(real)-ahead: len(real)], color='black', label=u"实际", linewidth=1)
+comfort_lower = real - 1500.0
+comfort_super = real + 1500.0
+plt.plot(range(-1*(len(real) - ahead), 0), real[0: len(real) - ahead], '-b', label=u"历史价格", linewidth=1)
+plt.xlabel(u"预测时间为正, 历史时间为负")
+plt.ylabel(u"价格, 新加坡币")
+plt.legend()
+plt.show()
+
+# (b) 显示部分历史时间数据
+Content += "(b) 显示部分历史时间数据\n"
+history_time_length = 50
+plt.plot(range(0, ahead), forecast1.reshape(-1), '-r', label=u"预测", linewidth=1)
+plt.plot(range(0, ahead), real[len(real)-ahead: len(real)], color='black', label=u"实际", linewidth=1)
+plt.plot(range(0, ahead), comfort_lower[len(comfort_lower)-ahead: len(comfort_lower)], '--k',
+         label=u"实际价格 - $1500", linewidth=1)
+plt.plot(range(0, ahead), comfort_super[len(comfort_super)-ahead: len(comfort_super)], '--k',
+         label=u"实际价格 + $1500", linewidth=1)
+plt.plot(range(-history_time_length, 0),
+         real[len(real) - ahead - history_time_length: len(real) - ahead], '-b', label=u"历史价格", linewidth=1)
+plt.xlabel(u"预测时间为正, 历史时间为负")
+plt.ylabel(u"价格, 新加坡币")
+plt.legend()
+plt.show()
+# 3.7 参考文献
+# [1] Kasstra, Iebeling, Milton Boyd,
+#     Designing a neural network for forecasting financial and economic time series. Neuro-computing,
+#     10.3 (1996): 215-236
+# [2] Frank, Ray J., Neil Davey, and Stephen P. Hunt,
+#     Time series prediction and neural networks. Journal of intelligent and robotic systems
+#     31.1-3 (2001): 91-103
+Content += "3.7 参考文献\n"
+Content += "[1] Kasstra, Iebeling, Milton Boyd,\n    " \
+           "Designing a neural network for forecasting financial " \
+           "and economic time series. Neuro-computing,\n    " \
+           "10.3 (1996): 215-236\n"
+Content += "[2] Frank, Ray J., Neil Davey, and Stephen P. Hunt,\n    " \
+           "Time series prediction and neural networks. Journal of intelligent and robotic systems\n" \
+           "    31.1-3 (2001): 91-103"
 #time.sleep(2)
+
+# 4. 第4章 模型中加入其它特征(Additional Attributes)
+Content += "4. 第4章 模型中加入其它特征(Additional Attributes)\n"
+
+
 print(Content)
+elapsed = time.time() - start
+print("程序一共执行了 ", elapsed, "秒.")
 
 
 
