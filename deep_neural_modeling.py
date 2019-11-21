@@ -526,8 +526,10 @@ if Chapter4NeedToRun:
     # 参考: http://pydoc.net/pyneurgen/0.3.1/pyneurgen.neuralnet/
     Content += "参考: http://pydoc.net/pyneurgen/0.3.1/pyneurgen.neuralnet/\n"
 
+Chapter5NeedToRun = [False, True][1]
 # 5.
 # 第5章 循环神经网络入门(基于Keras)
+Content += "5.\n第5章 循环神经网络入门\n"
 # 5.1 循环神经网络(RNN)的示意图
 Content += "5.1 循环神经网络(RNN)的示意图(演示200秒)\n"
 import matplotlib.image as mpimg  # 用于加载图片
@@ -556,11 +558,26 @@ print("\n您输入了: %s, 现在跳过rnn示意图学习" % your_input)
 time.sleep(3)
 
 # 5.2 Keras, TensorFlow, Theano 的关系
-
-Chapter5NeedToRun = [False, True][1]
-Content += "5.\n第5章 循环神经网络入门\n"
-Content += "5.1 Keras, TensorFlow, Theano 的关系\n"
-
+Content += "5.2 Keras, TensorFlow, Theano 的关系\n"
+# 5.3
+loc = './data/coe.csv'
+temp = pd.read_csv(loc)
+data = temp.drop(temp.columns[[0]], axis=1)
+y = data['COE$']
+x = data.drop(data.columns[[0, 4]], axis=1)
+x = x.apply(np.log)
+x = pd.concat([x, data["Open?"]], axis=1)
+from sklearn import preprocessing
+scaler_x = preprocessing.MinMaxScaler(
+    feature_range=(0, 1)
+)
+x = np.array(x).reshape(len(x), 4)
+x = scaler_x.fit_transform(x)
+scaler_y = preprocessing.MinMaxScaler(
+    feature_range=(0, 1)
+)
+y = np.array(y).reshape(len(y), 1)
+y = np.log(y)
 
 # 6.
 # 第6章 循环神经网络进阶: Elman Neural Networks(含延滞层)
