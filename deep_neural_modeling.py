@@ -558,15 +558,39 @@ print("\n您输入了: %s, 现在跳过rnn示意图学习" % your_input)
 time.sleep(3)
 
 # 5.2 Keras, TensorFlow, Theano 的关系
+console_print = "5.2 Keras, TensorFlow, Theano 的关系\n"
+print(console_print)
 Content += "5.2 Keras, TensorFlow, Theano 的关系\n"
-# 5.3
+# 5.3 运行一个 RNN 模型
+console_print = "5.3 运行一个 RNN 模型\n"
+print(console_print)
+Content += console_print
+# 5.3.1 如前面演示学习中所述, RNN 网络中的第 l+1 层(显式地)记忆了第 l 层 的隐藏层信息, 同时第 l 层的输出又是根据第 l 层的隐藏层通过
+#           权重学习, 然后被非线性激活函数处理后得到的结果, 因此我们可以理解为: 后一层的计算使用了前一层的输出, 如此循环下去, 最终构成了
+#           循环神经网络.
+console_print = "5.3.1 如前面演示学习中所述, RNN 网络中的第 l+1 层(显式地)记忆了第 l 层 的隐藏层信息, " \
+                "同时第 l 层的输出又是根据第 l 层的隐藏层通过\n权重学习, 然后被非线性激活函数处理后得到的结果, " \
+                "因此我们可以理解为: 后一层的计算使用了前一层的输出, 如此循环下去, 最终构成了循环神经网络\n"
+print(console_print)
+Content += console_print
+
+# 5.3.2 获取 coe 数据 含有列: DATE,COE$,COE$_1,#Bids,Quota,Open?
+console_print = "5.3.2 获取 coe 数据 含有列: DATE,COE$,COE$_1,#Bids,Quota,Open?\n"
+print(console_print)
+Content += console_print
 loc = './data/coe.csv'
 temp = pd.read_csv(loc)
+# 丢掉日期列
 data = temp.drop(temp.columns[[0]], axis=1)
+# y 是价格时间序列
 y = data['COE$']
+# x是输入特征(一共4个), 先(从data中)去掉目标价格时间序列和binary列(后面再加上), 对前一次的价格 COE$_1 和Bids, Quota 进行log变换.
 x = data.drop(data.columns[[0, 4]], axis=1)
+# log 变换
 x = x.apply(np.log)
+# 添加 Open? 列
 x = pd.concat([x, data["Open?"]], axis=1)
+# 对输入和输出进行归一化((0,1)), 使用 scaler_x.inverse_transform() 和 scaler_y.inverse_transform() 可以对数据还原.
 from sklearn import preprocessing
 scaler_x = preprocessing.MinMaxScaler(
     feature_range=(0, 1)
@@ -578,6 +602,213 @@ scaler_y = preprocessing.MinMaxScaler(
 )
 y = np.array(y).reshape(len(y), 1)
 y = np.log(y)
+y = scaler_y.fit_transform(y)
+# 5.3.3 生成训练数据与测试数据
+console_print = "5.3.3 生成训练数据(95%)与测试数据(5%)\n"
+print(console_print)
+Content += console_print
+end = len(x) - 1
+learn_end = int(end * 0.954)  # =int(251.856) -> 251, len(x) = 265
+"""
+x_train = x[0:learn_end - 1,]
+x_test = x[learn_end:end - 1,]
+y_train = y[1:learn_end]
+y_test = y[learn_end + 1:end]
+"""
+x_train = x[0:learn_end, ]
+x_test = x[learn_end:end - 1, ]
+y_train = y[0:learn_end]
+y_test = y[learn_end + 1:end]
+x_train = x_train.reshape(x_train.shape + (1,))
+x_test = x_test.reshape(x_test.shape + (1,))
+print("x_train 的形状是: ", x_train.shape)
+print("x_test 的形状是: ", x_test.shape)
+
+# 5.3.4 引入 Keras 模块
+console_print = "5.3.4 引入 Keras 模块\n"
+print(console_print)
+Content += console_print
+console_print = """
+      from keras.models import Sequential  # 目的: 可以做linear stacking of layers
+      from keras.optimizers import SGD  # 目的: 随机梯度下降
+      from keras.layers.core import Dense, Activation  # 目的: 引入激活函数以及一个全连接层(output 层)
+      from keras.layers.recurrent import SimpleRNN  # 目的: 引入一个将输出喂给输入的全连接循环神经网络\n"""
+print(console_print)
+Content += console_print
+console_print = "     全连接层的含义: 全连接层中的每个神经元与其前一层的所有神经元进行全连接\n"
+print(console_print)
+Content += console_print
+from keras.models import Sequential  # 目的: 可以做linear stacking of layers
+from keras.optimizers import SGD  # 目的: 随机梯度下降
+from keras.layers.core import Dense, Activation  # 目的: 引入激活函数以及一个全连接层(output 层)
+from keras.layers.recurrent import SimpleRNN  # 目的: 引入一个将输出喂给输入的全连接循环神经网络
+
+# 5.3.5 确定模型参数
+console_print = "5.3.5 确定模型参数\n"
+print(console_print)
+Content += console_print
+seed = 2019
+np.random.seed(seed)
+console_print = """
+      rnn5 = Sequential() # 目的: 确定后面可以通过 add 方法来增加网络中的层
+      rnn5.add(
+          SimpleRNN(output_dim=8, activation="tanh", input_shape=(4, 1))
+      )
+      # 目的: 构造8层循环, 激活函数为tanh函数(取值介于(-1,1)), 输入含4个特征维度, 时间步长为1.
+      rnn5.add(
+          Dense(output_dim=1, activation="linear")
+      )
+      # 目的: 增加1个全输出连接层, 激活函数使用线性函数
+"""
+print(console_print)
+Content += console_print
+rnn5 = Sequential()
+# 目的: 确定后面可以通过 add 方法来增加网络中的层
+rnn5.add(
+    SimpleRNN(output_dim=8, activation="tanh", input_shape=(4, 1))
+)
+# 目的: 构造8层循环, 激活函数为tanh函数(取值介于(-1,1)), 输入含4个特征维度, 时间步长为1.
+rnn5.add(
+    Dense(output_dim=1, activation="linear")
+)
+# 目的: 增加1个全输出连接层, 激活函数使用线性函数
+
+# 5.3.6 使用 momentum
+console_print = "5.3.6 使用 momentum\n"
+print(console_print)
+Content += console_print
+console_print = "学习速率与momentum配合使用是一种技巧, 谁用谁知道.\n"
+print(console_print)
+Content += console_print
+console_print = " momentum 示意图(演示40秒)\n"
+print(console_print)
+Content += console_print
+#import matplotlib.image as mpimg  # 用于加载图片
+benifit_of_momentum = mpimg.imread("./pictures/benifit_of_momentum.png")
+plt.imshow(benifit_of_momentum)
+plt.axis('off')
+plt.show()
+#import signal
+"""
+class InputTimeoutError(Exception):
+    pass
+def interrupted(signum, frame):
+    raise InputTimeoutError
+"""
+signal.signal(signal.SIGALRM, interrupted)
+signal.alarm(40)  # 设置自动停留时间
+try:
+    your_input = raw_input('momentum 示意图, 40秒后自动跳过, 按任意键手动跳过:\n'
+                           '可以访问\n'
+                           'https://blog.csdn.net/BVL10101111/article/details/72615621\n'
+                           '以获得更多信息.\n\n')
+except InputTimeoutError:
+    print("\n观看结束.")
+    your_input = ''
+signal.alarm(0)  # 读到键盘输入的话重置信号
+print("\n您输入了: %s, 现在跳过 momentum 示意图学习" % your_input)
+time.sleep(3)
+
+# 5.3.7 选择 momentum(动量), 并在 Netsterov 梯度加速下降方法使用
+console_print = "5.3.7 选择 momentum(动量), 并在 Netsterov 梯度加速下降方法使用\n"
+print(console_print)
+Content += console_print
+# 5.3.7.1 Netsterov 梯度加速下降 示意图
+console_print = "5.3.7.1 Netsterov 梯度加速下降(1阶优化方法, 提高稳定性与速度(Newton 法是几阶?)) 示意图(演示40秒)\n"
+print(console_print)
+Content += console_print
+#import matplotlib.image as mpimg  # 用于加载图片
+netsterov_accelerated_gd = mpimg.imread("./pictures/netsterov_accelerated_gd.png")
+plt.imshow(netsterov_accelerated_gd)
+plt.axis('off')
+plt.show()
+#import signal
+"""
+class InputTimeoutError(Exception):
+    pass
+def interrupted(signum, frame):
+    raise InputTimeoutError
+"""
+signal.signal(signal.SIGALRM, interrupted)
+signal.alarm(200)  # 设置自动停留时间
+try:
+    your_input = raw_input('netsterov_accelerated_gd 示意图, 200秒后自动跳过, 按任意键手动跳过:\n'
+                           '可以访问\n'
+                           'https://blog.csdn.net/tsyccnh/article/details/76673073\n'
+                           '以获得更多信息.\n\n')
+except InputTimeoutError:
+    print("\n观看结束.")
+    your_input = ''
+signal.alarm(0)  # 读到键盘输入的话重置信号
+print("\n您输入了: %s, 现在跳过 netsterov_accelerated_gd 示意图学习" % your_input)
+time.sleep(3)
+# 5.3.7.2 Netsterov 与 momentum 调用方式
+console_print = "5.3.7.2 Netsterov 与 momentum 调用方式\n"
+print(console_print)
+Content += console_print
+console_print = """
+      sgd = SGD(lr=0.0001, momentum=0.95,nesterov=True)
+      rnn5.compile(loss="mean_squared_error", optimizer=sgd)\n"""
+print(console_print)
+Content += console_print
+sgd = SGD(lr=0.0001, momentum=0.95,nesterov=True)
+rnn5.compile(loss="mean_squared_error", optimizer=sgd)
+# 5.3.8 现在我们还要使用 Mini Batch
+console_print = "5.3.8 现在我们还要使用 Mini Batch\n"
+print(console_print)
+Content += console_print
+console_print = "一个epoch遍历一次数据, 为了完成这个epoch, 我们可以选择全部训练样本数据去做计算更新一步参数(很多)" \
+                ",\n 也可以只用一个(随机梯度默认就会这样子做了), 我们还可以把一个epoch的数据分成很多个mini batch,\n 一个mini batch" \
+                "(如 batch_size=10)可以用来更新一次参数, 然后迭代多次来完成这个epoch.\n"
+print(console_print)
+Content += console_print
+# 5.3.9 模型训练 fit
+# 5.3.9.1 调用rnn5.fit()
+console_print = "5.3.9 模型训练 fit\n5.3.9.1 调用rnn5.fit()\n"
+print(console_print)
+Content += console_print
+#rnn5.fit(x_train, y_train, batch_size=10, nb_epoch=700)
+rnn5.fit(x_train, y_train, batch_size=10, nb_epoch=700)
+# 5.3.9.2 查看训练测试(预测)的误差
+console_print = "5.3.9.2 查看训练测试(预测)的误差\n"
+print(console_print)
+Content += console_print
+score_train = rnn5.evaluate(x_train, y_train, batch_size=10)
+score_test = rnn5.evaluate(x_test, y_test, batch_size=10)
+print("in train MSE = ", round(score_train, 6))
+print("in test MSE = ", round(score_test, 6))
+# 5.3.10 获取预测数据并还原成原尺度
+console_print = "5.3.10 获取预测数据并还原成原尺度\n"
+print(console_print)
+Content += console_print
+forecast5 = rnn5.predict(x_test)
+forecast5 = scaler_y.inverse_transform(np.array(forecast5).reshape((len(forecast5), 1)))
+forecast5 = np.exp(forecast5).reshape(-1)
+print(forecast5)
+
+Content += "作图:显示部分历史时间数据\n"
+real = np.array(data['COE$'])[0:263].reshape(-1)
+# 测试实际值
+test_reals = data['COE$'][251:263].tolist()
+history_time_length = 50
+ahead = 12
+plt.plot(range(0, ahead), forecast5, '-r', label=u"预测", linewidth=1)
+plt.plot(range(0, ahead), test_reals[0:ahead], color='black', label=u"实际", linewidth=1)
+plt.plot(range(0, ahead), np.array(test_reals[0:ahead]) - 1500, '--k',
+         label=u"实际价格 - $1500", linewidth=1)
+plt.plot(range(0, ahead), np.array(test_reals[0:ahead]) + 1500, '--k',
+         label=u"实际价格 + $1500", linewidth=1)
+plt.plot(range(-history_time_length, 0),
+         real[len(real) - ahead - history_time_length - 1: len(real) - ahead - 1],
+         '-b', label=u"历史价格", linewidth=1)
+plt.xlabel(u"预测时间为正, 历史时间为负")
+plt.ylabel(u"价格, 新加坡币")
+plt.legend()
+fig = plt.gcf()
+plt.show()
+rnn5_forecast_image_saved = False
+if rnn5_forecast_image_saved == True:
+    fig.savefig('./pictures/rnn5_forecast.png')
 
 # 6.
 # 第6章 循环神经网络进阶: Elman Neural Networks(含延滞层)
