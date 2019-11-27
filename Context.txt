@@ -1,11 +1,74 @@
 目录:
 1. 熟悉pandas.Series 的时序数据操作
+下面三条命令应该可以让图形可以显示中文， 这里我先注释掉，下次重启后可以开放为代码
 2.1
 一直一来，我们都是用 TensorFlow 框架搭建深度神经网络，但其实 python
 也提供了相应的统计和学习模块，比如我们要拟合函数 y = x**2
 2.1.1
 首先生成数据集 x 和标准数据 y = x **2
+2.1.2
+然后将数据加载进 dataSet ,格式是 [ ([x_input],[y_input]), ([x_input],[y_input]) .... ]
+2.1.3
+导入 neuralpy 包搭建神经网络并训练
+2.1.4
+评估模型表现
+2.1.5
+模型表现做图
+3. 第3章 时序深度神经网络
+3.1 时间数据描述
+Certificate of Entitlement (COE),
+我们获取这个价格的时间序列数据
+3.2 清洗xls数据
+3.2.1 用pandas读取xls数据文件
+3.2.2 获取xls文件的sheet_names, 列表
+3.2.3 将coe数据转为pandas DataFrame类型 并获取列名列表
+3.2.4 获取目标变量数据(DataFrame)
+(a) target 目标变量是历史价格 'COE$'
+(b) 调整错误数据
+3.3 此处为激活函数、梯度下降对学习
+3.4 利用 sklearn preprocessing 对 目标变量 data 进行归一化
+3.5 考察偏自相关系数
+3.6 利用 nnet-ts(依赖tensorflow, keras等) 来进行下一个时间的价格预测, 预测的舒适区间为 ＋／－$1,500
+3.6.1 利用TimeSeriesNet(hidden_layers = [7, 3] 预测下次价格(连续预测12次))
+3.6.2 做预测效果比较图
+(a) 所有时间数据都显示
+(b) 显示部分历史时间数据
+3.7 参考文献
+[1] Kasstra, Iebeling, Milton Boyd,
+    Designing a neural network for forecasting financial and economic time series. Neuro-computing,
+    10.3 (1996): 215-236
+[2] Frank, Ray J., Neil Davey, and Stephen P. Hunt,
+    Time series prediction and neural networks. Journal of intelligent and robotic systems
+    31.1-3 (2001): 91-103
 4. 第4章 模型中加入其它特征(Additional Attributes)
+4.1 删除日期列
+4.2 其它特征含义描述
+(a) COE$_1, 上一时间价格
+(b) #Bids 居民竞价次数
+(c) Quota 证书可获得量
+(d) Open? Bid是open还是closed
+4.3 target数据, 特征数据处理
+4.3.1 target 数据: price
+4.3.2 对 "price_lag_1="COE$_1", "#Bids", "Quota" 进行log变换
+4.3.3 加入 binary 特征 "Open?"
+4.3.4 用sklearn.preprocessing 进行归一化
+4.4 使用 pyneurgen工具(pip install) 进行深度学习建模
+4.4.1 需要将 input:x, output: y 转换为list
+4.4.2 导入 NeuralNet 工具
+4.4.3 指定网络结构
+4.4.4 随机初始化权重 weight 与偏差 bias(脑补随机梯度下降)
+4.4.5 选择学习速率
+4.4.6 指定训练测试结构
+4.4.6.1 set_learn_range 和 set_test_range 为左右闭区间
+BUG REPORT 相信这里self.set_learn_range()有一个bug, 无法测试最后一个时间点的数据数据
+4.4.6.2 选择每层网络的激活函数
+4.4.7 模型运行
+模型测试集mse可以由mse = nn4.test()得到
+4.4.8 获取模型预测结果的更多细节信息
+nn4.test_targets_activations给出测试部分实际值和预测值的pairs
+4.4.8.1 参考 (http://pyneurgen.sourceforge.net/tutorial_nn.html)
+作图:显示部分历史时间数据
+参考: http://pydoc.net/pyneurgen/0.3.1/pyneurgen.neuralnet/
 5.
 第5章 循环神经网络入门
 5.1 循环神经网络(RNN)的示意图(演示200秒)
@@ -54,3 +117,8 @@
 6.
 第6章 循环神经网络进阶: Elman Neural Networks(含延滞层)
 6.1 Elman NN广泛应用于控制, 优化, 模式分类
+6.2 Elman RNN 结构图(隐藏层与Delay层全连接)
+6.3 我们优化的损失函数可能有很多的局部最小值, 如下图所示
+Fit 模型 与 mse-epoch 作图
+6.5 预测与真实值作图
+作图:显示部分历史时间数据

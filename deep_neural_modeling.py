@@ -531,7 +531,7 @@ if Chapter4NeedToRun:
     # 参考: http://pydoc.net/pyneurgen/0.3.1/pyneurgen.neuralnet/
     Content += "参考: http://pydoc.net/pyneurgen/0.3.1/pyneurgen.neuralnet/\n"
 
-Chapter5NeedToRun = [False, True][1]
+Chapter5NeedToRun = [False, True][0]
 if Chapter5NeedToRun:
     # 5.
     # 第5章 循环神经网络入门(基于Keras)
@@ -821,11 +821,146 @@ if Chapter5NeedToRun:
 # 6.1 Elman NN广泛应用于控制, 优化, 模式分类
 Content += "6.\n第6章 循环神经网络进阶: Elman Neural Networks(含延滞层)\n" \
            "6.1 Elman NN广泛应用于控制, 优化, 模式分类\n"
+# 为节省时间, 我们仅简单介绍其原理, 主要还是看代码.
+# 6.2 Elman RNN 结构图(隐藏层与Delay层全连接)
+console_print = "6.2 Elman RNN 结构图(隐藏层与Delay层全连接)\n"
+print(console_print)
+Content += console_print
+import matplotlib.image as mpimg  # 用于加载图片
+ernn6_structure = mpimg.imread("./pictures/ernn6_structure.png")
+plt.imshow(ernn6_structure)
+plt.axis('off')
+plt.show()
+time.sleep(2)
+
+# 数据准备
+loc = './data/coe.csv'
+temp = pd.read_csv(loc)
+# 丢掉日期列
+data = temp.drop(temp.columns[[0]], axis=1)
+# y 是价格时间序列
+y = data['COE$']
+# x是输入特征(一共4个), 先(从data中)去掉目标价格时间序列和binary列(后面再加上), 对前一次的价格 COE$_1 和Bids, Quota 进行log变换.
+x = data.drop(data.columns[[0, 4]], axis=1)
+# log 变换
+x = x.apply(np.log)
+# 添加 Open? 列
+x = pd.concat([x, data["Open?"]], axis=1)
+# 对输入和输出进行归一化((0,1)), 使用 scaler_x.inverse_transform() 和 scaler_y.inverse_transform() 可以对数据还原.
+from sklearn import preprocessing
+scaler_x = preprocessing.MinMaxScaler(
+    feature_range=(0, 1)
+)
+x = np.array(x).reshape(len(x), 4)
+x = scaler_x.fit_transform(x)
+scaler_y = preprocessing.MinMaxScaler(
+    feature_range=(0, 1)
+)
+y = np.array(y).reshape(len(y), 1)
+y = np.log(y)
+y = scaler_y.fit_transform(y)
+y = y.tolist()
+x = x.tolist()
+
+# 调用erman 神经网络
+from pyneurgen.neuralnet import NeuralNet
+from pyneurgen.recurrent import ElmanSimpleRecurrent
+random.seed(2019)
+ernn6 = NeuralNet()
+input_nodes = 4
+hidden_nodes = 7
+output_nodes =1
+ernn6.init_layers(input_nodes, [hidden_nodes], output_nodes, ElmanSimpleRecurrent())
+ernn6.randomize_network()
+ernn6.layers[1].set_activation_type('sigmoid')
+ernn6.set_learnrate(0.05)
+ernn6.set_all_inputs(x)
+ernn6.set_all_targets(y)
+#import matplotlib.image as mpimg  # 用于加载图片
+
+# 6.3 我们优化的损失函数可能有很多的局部最小值, 如下图所示
+console_print = "6.3 我们优化的损失函数可能有很多的局部最小值, 如下图所示\n"
+print(console_print)
+Content += console_print
+typical_error_surface6 = mpimg.imread("./pictures/typical_error_surface6.png")
+plt.imshow(typical_error_surface6)
+plt.axis('off')
+plt.show()
+time.sleep(2)
+
+# 6.4 Fit 模型 与 mse-epoch 作图
+console_print = "Fit 模型 与 mse-epoch 作图\n"
+print(console_print)
+Content += console_print
+length = len(x)
+learn_end_point = int(length * 0.95)
+ernn6.set_learn_range(0, learn_end_point)
+ernn6.set_test_range(learn_end_point + 1, length - 1)
+ernn6.learn(epochs=100, show_epoch_results=True, random_testing=False)
+plt.plot(range(1, len(ernn6.accum_mse) + 1, 1), ernn6.accum_mse)
+plt.xlabel('epochs')
+plt.ylabel('mean squared error')
+plt.grid(True)
+plt.title("Mean Squared Error by Epoch")
+fig = plt.gcf()
+plt.show()
+fig.savefig('./pictures/ernn6_mse_by_epoch.png')
+
+# 6.5 预测与真实值作图
+console_print = "6.5 预测与真实值作图\n"
+print(console_print)
+Content += console_print
+mse = ernn6.test()
+print("测试集的mse是: ", np.round(mse, 6))
+
+# 测试实际值
+test_reals = data['COE$'][learn_end_point + 1:length].tolist()
+print("test_reals are (时间长度为%d):" % len(test_reals))
+print(test_reals)
+
+# 模型反归一化变换得到真实际值
+retrieved_reals = [np.exp(
+    scaler_y.inverse_transform(
+        np.array(item).reshape(-1, 1)
+    ))[0][0] for item in ernn6.test_targets_activations]
+print("retrieved_reals are(时间长度为%d):" % len(retrieved_reals))
+print(retrieved_reals)
+
+# 模型对价格的预测值
+forecast = [np.exp(
+    scaler_y.inverse_transform(
+        np.array(item).reshape(-1, 1)
+    ))[1][0] for item in ernn6.test_targets_activations]
+print("forecasts are(时间长度为%d):" % len(forecast))
+print(forecast)
+
+Content += "作图:显示部分历史时间数据\n"
+real = np.array(data['COE$']).reshape(-1)
+history_time_length = 50
+ahead = 12
+plt.plot(range(0, ahead), forecast, '-r', label=u"预测", linewidth=1)
+plt.plot(range(0, ahead), test_reals[0:ahead], color='black', label=u"实际", linewidth=1)
+plt.plot(range(0, ahead), np.array(test_reals[0:ahead]) - 1500, '--k',
+         label=u"实际价格 - $1500", linewidth=1)
+plt.plot(range(0, ahead), np.array(test_reals[0:ahead]) + 1500, '--k',
+         label=u"实际价格 + $1500", linewidth=1)
+plt.plot(range(-history_time_length, 0),
+         real[len(real) - ahead - history_time_length - 1: len(real) - ahead - 1],
+         '-b', label=u"历史价格", linewidth=1)
+plt.xlabel(u"预测时间为正, 历史时间为负")
+plt.ylabel(u"价格, 新加坡币")
+plt.legend()
+fig = plt.gcf()
+plt.show()
+fig.savefig('./pictures/ernn6_forecast.png')
+# 第6章完成.
 
 
-Content_txt_file = open("./Context.txt", "w")
-Content_txt_file.write("目录:\n%s" %Content)
-Content_txt_file.close()
+ContentFileNeedToUpdate = False
+if ContentFileNeedToUpdate:
+    Content_txt_file = open("./Context.txt", "w")
+    Content_txt_file.write("目录:\n%s" % Content)
+    Content_txt_file.close()
 print(Content)
 elapsed = time.time() - start
 print("程序一共执行了 ", elapsed, "秒.")
