@@ -80,6 +80,17 @@ plt.show()
 plt.plot(z.index, z.values, 'y')
 plt.show()
 
+UseMacbook = True
+# /Users/qinbo/miniconda3/envs/neural-py27/lib/python2.7/site-packages/matplotlib/mpl-data/matplotlibrc
+Content += "下面三条命令应该可以让图形可以显示中文， 这里我先注释掉，下次重启后可以开放为代码\n"
+if UseMacbook:
+    plt.rcParams['font.sans-serif'] = ['SimHei']
+    plt.rcParams['axes.unicode_minus'] =False
+else:
+    from matplotlib.pylab import mpl
+    mpl.rcParams['font.sans-serif'] = ['SimHei']  # 指定默认字体
+
+    mpl.rcParams['axes.unicode_minus'] = False  # 解决保存图像是负号'-'显示为方块的问题
 
 # 2.1
 # 一直一来，我们都是用 TensorFlow 框架搭建深度神经网络，但其实 python
@@ -153,13 +164,7 @@ if Chapter2NeedToRun:
     # 模型表现做图
     # 下面三条命令应该可以让图形可以显示中文， 这里我先注释掉，下次重启后可以开放为代码
     Content += "2.1.5\n模型表现做图\n"
-    Content += "下面三条命令应该可以让图形可以显示中文， 这里我先注释掉，下次重启后可以开放为代码\n"
-    if Code:
-        from matplotlib.pylab import mpl
-        
-        mpl.rcParams['font.sans-serif'] = ['SimHei']  # 指定默认字体
-        mpl.rcParams['axes.unicode_minus'] = False  # 解决保存图像是负号'-'显示为方块的问题
-    
+
     # from matplotlib import font_manager
     # from matplotlib.pylab import mpl
     # fname = '/home/qinbo/anaconda3/envs/neural-py27/lib/python2.7/site-packages/matplotlib/mpl-data/fonts/ttf/SimHei.ttf'
@@ -769,7 +774,7 @@ if Chapter5NeedToRun:
     print(console_print)
     Content += console_print
     #rnn5.fit(x_train, y_train, batch_size=10, nb_epoch=700)
-    rnn5.fit(x_train, y_train, batch_size=10, nb_epoch=700)
+    rnn5.fit(x_train, y_train, batch_size=10, nb_epoch=100)
     # 5.3.9.2 查看训练测试(预测)的误差
     console_print = "5.3.9.2 查看训练测试(预测)的误差\n"
     print(console_print)
