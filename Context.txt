@@ -122,9 +122,10 @@ nn4.test_targets_activations给出测试部分实际值和预测值的pairs
 Fit 模型 与 mse-epoch 作图
 6.5 预测与真实值作图
 作图:显示部分历史时间数据
+9. LSTM
+
 上面的已经有了详细运行代码和注释,下面的还没有:
 8. 非线性自回归(with Exogenous 输入, 类似与arimaX)的rnn版本.
-9. LSTM
 10. GRU
 11. 多组时间序列在一起(如IBM,微软,Apple的开盘价和收盘价的时序数据作为一组变量, FTSE100与DJIA作为一组变量 等)
 11.1 多维时序预测变量对于rnn来说, 不是一个问题.
