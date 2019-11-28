@@ -702,9 +702,9 @@ if Chapter5NeedToRun:
         raise InputTimeoutError
     """
     signal.signal(signal.SIGALRM, interrupted)
-    signal.alarm(40)  # 设置自动停留时间
+    signal.alarm(200)  # 设置自动停留时间
     try:
-        your_input = raw_input('momentum 示意图, 40秒后自动跳过, 按任意键手动跳过:\n'
+        your_input = raw_input('momentum 示意图, 200秒后自动跳过, 按任意键手动跳过:\n'
                                '可以访问\n'
                                'https://blog.csdn.net/BVL10101111/article/details/72615621\n'
                                '以获得更多信息.\n\n')
@@ -720,7 +720,7 @@ if Chapter5NeedToRun:
     print(console_print)
     Content += console_print
     # 5.3.7.1 Netsterov 梯度加速下降 示意图
-    console_print = "5.3.7.1 Netsterov 梯度加速下降(1阶优化方法, 提高稳定性与速度(Newton 法是几阶?)) 示意图(演示40秒)\n"
+    console_print = "5.3.7.1 Netsterov 梯度加速下降(1阶优化方法, 提高稳定性与速度(Newton 法是几阶?)) 示意图(演示200秒)\n"
     print(console_print)
     Content += console_print
     #import matplotlib.image as mpimg  # 用于加载图片
@@ -816,145 +816,366 @@ if Chapter5NeedToRun:
     if not rnn5_forecast_image_saved:
         fig.savefig('./pictures/rnn5_forecast.png')
 
-# 6.
-# 第6章 循环神经网络进阶: Elman Neural Networks(含延滞层)
-# 6.1 Elman NN广泛应用于控制, 优化, 模式分类
-Content += "6.\n第6章 循环神经网络进阶: Elman Neural Networks(含延滞层)\n" \
-           "6.1 Elman NN广泛应用于控制, 优化, 模式分类\n"
-# 为节省时间, 我们仅简单介绍其原理, 主要还是看代码.
-# 6.2 Elman RNN 结构图(隐藏层与Delay层全连接)
-console_print = "6.2 Elman RNN 结构图(隐藏层与Delay层全连接)\n"
-print(console_print)
-Content += console_print
-import matplotlib.image as mpimg  # 用于加载图片
-ernn6_structure = mpimg.imread("./pictures/ernn6_structure.png")
-plt.imshow(ernn6_structure)
-plt.axis('off')
-plt.show()
-time.sleep(2)
+Chapter6NeedToRun = [False, True][0]
+if Chapter6NeedToRun:
+    # 6.
+    # 第6章 循环神经网络进阶: Elman Neural Networks(含延滞层)
+    # 6.1 Elman NN广泛应用于控制, 优化, 模式分类
+    Content += "6.\n第6章 循环神经网络进阶: Elman Neural Networks(含延滞层)\n" \
+               "6.1 Elman NN广泛应用于控制, 优化, 模式分类\n"
+    # 为节省时间, 我们仅简单介绍其原理, 主要还是看代码.
+    # 6.2 Elman RNN 结构图(隐藏层与Delay层全连接)
+    console_print = "6.2 Elman RNN 结构图(隐藏层与Delay层全连接)\n"
+    print(console_print)
+    Content += console_print
+    import matplotlib.image as mpimg  # 用于加载图片
+    ernn6_structure = mpimg.imread("./pictures/ernn6_structure.png")
+    plt.imshow(ernn6_structure)
+    plt.axis('off')
+    plt.show()
+    time.sleep(2)
+    
+    # 数据准备
+    loc = './data/coe.csv'
+    temp = pd.read_csv(loc)
+    # 丢掉日期列
+    data = temp.drop(temp.columns[[0]], axis=1)
+    # y 是价格时间序列
+    y = data['COE$']
+    # x是输入特征(一共4个), 先(从data中)去掉目标价格时间序列和binary列(后面再加上), 对前一次的价格 COE$_1 和Bids, Quota 进行log变换.
+    x = data.drop(data.columns[[0, 4]], axis=1)
+    # log 变换
+    x = x.apply(np.log)
+    # 添加 Open? 列
+    x = pd.concat([x, data["Open?"]], axis=1)
+    # 对输入和输出进行归一化((0,1)), 使用 scaler_x.inverse_transform() 和 scaler_y.inverse_transform() 可以对数据还原.
+    from sklearn import preprocessing
+    scaler_x = preprocessing.MinMaxScaler(
+        feature_range=(0, 1)
+    )
+    x = np.array(x).reshape(len(x), 4)
+    x = scaler_x.fit_transform(x)
+    scaler_y = preprocessing.MinMaxScaler(
+        feature_range=(0, 1)
+    )
+    y = np.array(y).reshape(len(y), 1)
+    y = np.log(y)
+    y = scaler_y.fit_transform(y)
+    y = y.tolist()
+    x = x.tolist()
+    
+    # 调用erman 神经网络
+    from pyneurgen.neuralnet import NeuralNet
+    from pyneurgen.recurrent import ElmanSimpleRecurrent
+    random.seed(2019)
+    ernn6 = NeuralNet()
+    input_nodes = 4
+    hidden_nodes = 7
+    output_nodes =1
+    ernn6.init_layers(input_nodes, [hidden_nodes], output_nodes, ElmanSimpleRecurrent())
+    ernn6.randomize_network()
+    ernn6.layers[1].set_activation_type('sigmoid')
+    ernn6.set_learnrate(0.05)
+    ernn6.set_all_inputs(x)
+    ernn6.set_all_targets(y)
+    #import matplotlib.image as mpimg  # 用于加载图片
+    
+    # 6.3 我们优化的损失函数可能有很多的局部最小值, 如下图所示
+    console_print = "6.3 我们优化的损失函数可能有很多的局部最小值, 如下图所示\n"
+    print(console_print)
+    Content += console_print
+    typical_error_surface6 = mpimg.imread("./pictures/typical_error_surface6.png")
+    plt.imshow(typical_error_surface6)
+    plt.axis('off')
+    plt.show()
+    time.sleep(2)
+    
+    # 6.4 Fit 模型 与 mse-epoch 作图
+    console_print = "Fit 模型 与 mse-epoch 作图\n"
+    print(console_print)
+    Content += console_print
+    length = len(x)
+    learn_end_point = int(length * 0.95)
+    ernn6.set_learn_range(0, learn_end_point)
+    ernn6.set_test_range(learn_end_point + 1, length - 1)
+    ernn6.learn(epochs=100, show_epoch_results=True, random_testing=False)
+    plt.plot(range(1, len(ernn6.accum_mse) + 1, 1), ernn6.accum_mse)
+    plt.xlabel('epochs')
+    plt.ylabel('mean squared error')
+    plt.grid(True)
+    plt.title("Mean Squared Error by Epoch")
+    fig = plt.gcf()
+    plt.show()
+    fig.savefig('./pictures/ernn6_mse_by_epoch.png')
+    
+    # 6.5 预测与真实值作图
+    console_print = "6.5 预测与真实值作图\n"
+    print(console_print)
+    Content += console_print
+    mse = ernn6.test()
+    print("测试集的mse是: ", np.round(mse, 6))
+    
+    # 测试实际值
+    test_reals = data['COE$'][learn_end_point + 1:length].tolist()
+    print("test_reals are (时间长度为%d):" % len(test_reals))
+    print(test_reals)
+    
+    # 模型反归一化变换得到真实际值
+    retrieved_reals = [np.exp(
+        scaler_y.inverse_transform(
+            np.array(item).reshape(-1, 1)
+        ))[0][0] for item in ernn6.test_targets_activations]
+    print("retrieved_reals are(时间长度为%d):" % len(retrieved_reals))
+    print(retrieved_reals)
+    
+    # 模型对价格的预测值
+    forecast = [np.exp(
+        scaler_y.inverse_transform(
+            np.array(item).reshape(-1, 1)
+        ))[1][0] for item in ernn6.test_targets_activations]
+    print("forecasts are(时间长度为%d):" % len(forecast))
+    print(forecast)
+    
+    Content += "作图:显示部分历史时间数据\n"
+    real = np.array(data['COE$']).reshape(-1)
+    history_time_length = 50
+    ahead = 12
+    plt.plot(range(0, ahead), forecast, '-r', label=u"预测", linewidth=1)
+    plt.plot(range(0, ahead), test_reals[0:ahead], color='black', label=u"实际", linewidth=1)
+    plt.plot(range(0, ahead), np.array(test_reals[0:ahead]) - 1500, '--k',
+             label=u"实际价格 - $1500", linewidth=1)
+    plt.plot(range(0, ahead), np.array(test_reals[0:ahead]) + 1500, '--k',
+             label=u"实际价格 + $1500", linewidth=1)
+    plt.plot(range(-history_time_length, 0),
+             real[len(real) - ahead - history_time_length - 1: len(real) - ahead - 1],
+             '-b', label=u"历史价格", linewidth=1)
+    plt.xlabel(u"预测时间为正, 历史时间为负")
+    plt.ylabel(u"价格, 新加坡币")
+    plt.legend()
+    fig = plt.gcf()
+    plt.show()
+    fig.savefig('./pictures/ernn6_forecast.png')
+    # 第6章完成.
 
-# 数据准备
-loc = './data/coe.csv'
-temp = pd.read_csv(loc)
-# 丢掉日期列
-data = temp.drop(temp.columns[[0]], axis=1)
-# y 是价格时间序列
-y = data['COE$']
-# x是输入特征(一共4个), 先(从data中)去掉目标价格时间序列和binary列(后面再加上), 对前一次的价格 COE$_1 和Bids, Quota 进行log变换.
-x = data.drop(data.columns[[0, 4]], axis=1)
-# log 变换
-x = x.apply(np.log)
-# 添加 Open? 列
-x = pd.concat([x, data["Open?"]], axis=1)
-# 对输入和输出进行归一化((0,1)), 使用 scaler_x.inverse_transform() 和 scaler_y.inverse_transform() 可以对数据还原.
-from sklearn import preprocessing
-scaler_x = preprocessing.MinMaxScaler(
-    feature_range=(0, 1)
-)
-x = np.array(x).reshape(len(x), 4)
-x = scaler_x.fit_transform(x)
-scaler_y = preprocessing.MinMaxScaler(
-    feature_range=(0, 1)
-)
-y = np.array(y).reshape(len(y), 1)
-y = np.log(y)
-y = scaler_y.fit_transform(y)
-y = y.tolist()
-x = x.tolist()
-
-# 调用erman 神经网络
-from pyneurgen.neuralnet import NeuralNet
-from pyneurgen.recurrent import ElmanSimpleRecurrent
-random.seed(2019)
-ernn6 = NeuralNet()
-input_nodes = 4
-hidden_nodes = 7
-output_nodes =1
-ernn6.init_layers(input_nodes, [hidden_nodes], output_nodes, ElmanSimpleRecurrent())
-ernn6.randomize_network()
-ernn6.layers[1].set_activation_type('sigmoid')
-ernn6.set_learnrate(0.05)
-ernn6.set_all_inputs(x)
-ernn6.set_all_targets(y)
-#import matplotlib.image as mpimg  # 用于加载图片
-
-# 6.3 我们优化的损失函数可能有很多的局部最小值, 如下图所示
-console_print = "6.3 我们优化的损失函数可能有很多的局部最小值, 如下图所示\n"
-print(console_print)
-Content += console_print
-typical_error_surface6 = mpimg.imread("./pictures/typical_error_surface6.png")
-plt.imshow(typical_error_surface6)
-plt.axis('off')
-plt.show()
-time.sleep(2)
-
-# 6.4 Fit 模型 与 mse-epoch 作图
-console_print = "Fit 模型 与 mse-epoch 作图\n"
-print(console_print)
-Content += console_print
-length = len(x)
-learn_end_point = int(length * 0.95)
-ernn6.set_learn_range(0, learn_end_point)
-ernn6.set_test_range(learn_end_point + 1, length - 1)
-ernn6.learn(epochs=100, show_epoch_results=True, random_testing=False)
-plt.plot(range(1, len(ernn6.accum_mse) + 1, 1), ernn6.accum_mse)
-plt.xlabel('epochs')
-plt.ylabel('mean squared error')
-plt.grid(True)
-plt.title("Mean Squared Error by Epoch")
-fig = plt.gcf()
-plt.show()
-fig.savefig('./pictures/ernn6_mse_by_epoch.png')
-
-# 6.5 预测与真实值作图
-console_print = "6.5 预测与真实值作图\n"
-print(console_print)
-Content += console_print
-mse = ernn6.test()
-print("测试集的mse是: ", np.round(mse, 6))
-
-# 测试实际值
-test_reals = data['COE$'][learn_end_point + 1:length].tolist()
-print("test_reals are (时间长度为%d):" % len(test_reals))
-print(test_reals)
-
-# 模型反归一化变换得到真实际值
-retrieved_reals = [np.exp(
-    scaler_y.inverse_transform(
-        np.array(item).reshape(-1, 1)
-    ))[0][0] for item in ernn6.test_targets_activations]
-print("retrieved_reals are(时间长度为%d):" % len(retrieved_reals))
-print(retrieved_reals)
-
-# 模型对价格的预测值
-forecast = [np.exp(
-    scaler_y.inverse_transform(
-        np.array(item).reshape(-1, 1)
-    ))[1][0] for item in ernn6.test_targets_activations]
-print("forecasts are(时间长度为%d):" % len(forecast))
-print(forecast)
-
-Content += "作图:显示部分历史时间数据\n"
-real = np.array(data['COE$']).reshape(-1)
-history_time_length = 50
-ahead = 12
-plt.plot(range(0, ahead), forecast, '-r', label=u"预测", linewidth=1)
-plt.plot(range(0, ahead), test_reals[0:ahead], color='black', label=u"实际", linewidth=1)
-plt.plot(range(0, ahead), np.array(test_reals[0:ahead]) - 1500, '--k',
-         label=u"实际价格 - $1500", linewidth=1)
-plt.plot(range(0, ahead), np.array(test_reals[0:ahead]) + 1500, '--k',
-         label=u"实际价格 + $1500", linewidth=1)
-plt.plot(range(-history_time_length, 0),
-         real[len(real) - ahead - history_time_length - 1: len(real) - ahead - 1],
-         '-b', label=u"历史价格", linewidth=1)
-plt.xlabel(u"预测时间为正, 历史时间为负")
-plt.ylabel(u"价格, 新加坡币")
-plt.legend()
-fig = plt.gcf()
-plt.show()
-fig.savefig('./pictures/ernn6_forecast.png')
-# 第6章完成.
-
+Chapter9NeedToRun = [False, True][1]
+if Chapter9NeedToRun:
+    # 第9章 LSTM
+    # 广泛应用于语音,手写识别, 时序预测(周期性趋势的长短记忆信息学习)等
+    # 我们应用lstm模型学习太阳黑子活动规律, 舒适区间为 (+/-)50
+    import urllib
+    #url = "https://goo.gl/uWbihf"
+    #data = pd.read_csv(url, sep=";")
+    loc = "./data/monthly_sunspots.csv"
+    #data.to_csv(loc, index=False)
+    data_csv = pd.read_csv(loc, header=None)
+    yt = data_csv.iloc[0:3210, 3]
+    print(yt.head())
+    print(yt.tail())
+    # 9.2 考察偏自相关系数(Autocorrelation)
+    #Content += "9.2 考察偏自相关系数\n"
+    from statsmodels.tsa.stattools import pacf
+    yt_pacf = pacf(yt, nlags=30, method='ols')
+    print(yt_pacf)
+    plt.plot(range(0, 31), yt_pacf)
+    plt.xlabel(u'月')
+    plt.ylabel(u'偏自相关系数')
+    plt.grid(True)
+    plt.title(u"277年以来的太阳黑子活动相关性分析")
+    fig = plt.gcf()
+    plt.show()
+    sunspot_pacf_image_saved = True
+    if not sunspot_pacf_image_saved:
+        fig.savefig('./pictures/sunspot_pacf.png')
+    yt_1 = yt.shift(1)
+    yt_2 = yt.shift(2)
+    yt_3 = yt.shift(3)
+    yt_4 = yt.shift(4)
+    yt_5 = yt.shift(5)
+    data = pd.concat([yt, yt_1, yt_2, yt_3, yt_4, yt_5], axis=1)
+    data.columns = ["yt", "yt_1", "yt_2", "yt_3", "yt_4","yt_5"]
+    # yt_n 取前n个月的数据, 于是我们获取到的数据含有nan值(5行)
+    console_print = "yt_n 取前n个月的数据, 于是我们获取到的数据含有nan值(5行)\n"
+    print(console_print)
+    print(data.head(6))
+    data = data.dropna()
+    y = data['yt']
+    cols = ["yt_1", "yt_2", "yt_3", "yt_4","yt_5"]
+    x = data[cols]
+    
+    # 下图演示了一个简单的 lstm 记忆块的结构: 含有一个输入门, 一个输出门, 一个遗忘门.
+    import matplotlib.image as mpimg  # 用于加载图片
+    simple_memory_block_lstm9 = mpimg.imread("./pictures/simple_memory_block_lstm9.png")
+    plt.imshow(simple_memory_block_lstm9)
+    plt.axis('off')
+    plt.show()
+    if not Chapter5NeedToRun:
+        import signal
+        class InputTimeoutError(Exception):
+            pass
+        def interrupted(signum, frame):
+            raise InputTimeoutError
+        
+    signal.signal(signal.SIGALRM, interrupted)
+    signal.alarm(300)  # 设置自动停留时间
+    try:
+        your_input = raw_input('请看lstm 记忆块 示意图, 300秒后自动跳过, 按任意键手动跳过:\n'
+                               '可以访问\n'
+                               'https://blog.csdn.net/shijing_0214/article/details/52081301\n'
+                               '以获得更多信息.\n\n')
+    except InputTimeoutError:
+        print("\n观看结束.")
+        your_input = ''
+    signal.alarm(0)  # 读到键盘输入的话重置信号
+    print("\n您输入了: %s, 现在跳过lstm 记忆块示意图学习" % your_input)
+    time.sleep(2)
+    
+    # 1 个记忆细胞, 3 个乘积门
+    # inner hard sigmoid function 可分段线性
+    
+    cec_1 = mpimg.imread("./pictures/cec_1.png")
+    plt.imshow(cec_1)
+    plt.axis('off')
+    plt.show()
+    signal.signal(signal.SIGALRM, interrupted)
+    signal.alarm(300)  # 设置自动停留时间
+    try:
+        your_input = raw_input('请看CEC 示意图1, 300秒后自动跳过, 按任意键手动跳过:\n'
+                               '可以访问\n'
+                               'https://deepai.org/machine-learning-glossary-and-terms/constant%20error%20carousel\n'
+                               '以获得更多信息.\n\n')
+    except InputTimeoutError:
+        print("\n观看结束.")
+        your_input = ''
+    signal.alarm(0)  # 读到键盘输入的话重置信号
+    print("\n您输入了: %s, 现在跳过CEC 示意图1 学习" % your_input)
+    time.sleep(2)
+    
+    
+    cec_2 = mpimg.imread("./pictures/cec_2.png")
+    plt.imshow(cec_2)
+    plt.axis('off')
+    plt.show()
+    signal.signal(signal.SIGALRM, interrupted)
+    signal.alarm(300)  # 设置自动停留时间
+    try:
+        your_input = raw_input('请看CEC 示意图2, 300秒后自动跳过, 按任意键手动跳过:\n'
+                               '可以访问\n'
+                               'https://www.quantinfo.com/Article/View/695.html\n'
+                               '以获得更多信息.\n\n')
+    except InputTimeoutError:
+        print("\n观看结束.")
+        your_input = ''
+    signal.alarm(0)  # 读到键盘输入的话重置信号
+    print("\n您输入了: %s, 现在跳过CEC 示意图2 学习" % your_input)
+    time.sleep(2)
+    
+    cec_3 = mpimg.imread("./pictures/cec_3.png")
+    plt.imshow(cec_3)
+    plt.axis('off')
+    plt.show()
+    signal.signal(signal.SIGALRM, interrupted)
+    signal.alarm(300)  # 设置自动停留时间
+    try:
+        your_input = raw_input('请看CEC 示意图3, 300秒后自动跳过, 按任意键手动跳过:\n'
+                               '可以访问\n'
+                               'https://www.quantinfo.com/Article/View/695.html\n'
+                               '以获得更多信息.\n\n')
+    except InputTimeoutError:
+        print("\n观看结束.")
+        your_input = ''
+    signal.alarm(0)  # 读到键盘输入的话重置信号
+    print("\n您输入了: %s, 现在跳过CEC 示意图3 学习" % your_input)
+    time.sleep(2)
+    
+    hard_sigmoid_image = mpimg.imread("./pictures/hard_sigmoid.png")
+    plt.imshow(hard_sigmoid_image)
+    plt.axis('off')
+    plt.show()
+    signal.signal(signal.SIGALRM, interrupted)
+    signal.alarm(300)  # 设置自动停留时间
+    try:
+        your_input = raw_input('请看hard_sigmoid 示意图, 300秒后自动跳过, 按任意键手动跳过:\n'
+                               '可以访问\n'
+                               'https://www.quantinfo.com/Article/View/695.html\n'
+                               '以获得更多信息.\n\n')
+    except InputTimeoutError:
+        print("\n观看结束.")
+        your_input = ''
+    signal.alarm(0)  # 读到键盘输入的话重置信号
+    print("\n您输入了: %s, 现在跳过hard_sigmoid 示意图 学习" % your_input)
+    time.sleep(2)
+    
+    from sklearn import preprocessing
+    scaler_x = preprocessing.MinMaxScaler(
+        feature_range=(-1, 1))
+    x = np.array(x).reshape(len(x), 5)
+    x = scaler_x.fit_transform(x)
+    
+    scaler_y = preprocessing.MinMaxScaler(
+        feature_range=(-1, 1))
+    y = np.array(y).reshape(len(y), 1)
+    #y = np.log(y) 为什么不取对数呢
+    y = scaler_y.fit_transform(y)
+    train_end = 3042
+    x_train = x[0:train_end, ]
+    x_test = x[train_end + 1: 3205, ]
+    y_train = y[0:train_end]
+    y_test = y[train_end + 1:3205]
+    x_train = x_train.reshape(x_train.shape + (1,))
+    x_test = x_test.reshape(x_test.shape + (1,))
+    print("shape of x_train is: ")
+    print(x_train.shape)
+    from keras.models import Sequential
+    from keras.layers.core import Dense, Activation
+    from keras.layers.recurrent import LSTM
+    seed = 2019
+    np.random.seed(seed)
+    lstm9 = Sequential()
+    lstm9.add(LSTM(output_dim=4,
+                   activation='tanh',
+                   inner_activation='hard_sigmoid',
+                   input_shape=(5,1)
+                   )
+              )
+    lstm9.add(Dense(output_dim=1, activation='linear'))
+    # 使用 rmsprop 自动调整学习速率
+    lstm9.compile(loss="mean_squared_error", optimizer="rmsprop")
+    # 时序不shuffle
+    lstm9.fit(x_train, y_train, batch_size=1, nb_epoch=1, shuffle=False)
+    
+    print(lstm9.summary())
+    score_train = lstm9.evaluate(x_train, y_train, batch_size=1)
+    score_test=lstm9.evaluate(x_test, y_test, batch_size=1)
+    print("训练误差是:", round(score_train, 4))
+    print("测试误差是:", round(score_test, 4))
+    forecast9 = lstm9.predict(x_test)
+    forecast9 = scaler_y.inverse_transform(np.array(forecast9).reshape(len(forecast9), 1))
+    forecast9 = np.array(forecast9).reshape(-1)
+    print("预测值是: ")
+    print(forecast9)
+    print("作图:显示部分历史时间数据\n")
+    real = np.array(data['yt'][0:3042]).reshape(-1)
+    test_reals = data['yt'][3043:3205].tolist()
+    history_time_length = 400
+    ahead = 162
+    plt.plot(range(0, ahead), forecast9, '-r', label=u"预测", linewidth=1)
+    plt.plot(range(0, ahead), test_reals[0:ahead], color='black', label=u"实际", linewidth=1)
+    plt.plot(range(0, ahead), np.array(test_reals[0:ahead]) - 50, '--k',
+             label=u"实际活动 - 50", linewidth=1)
+    plt.plot(range(0, ahead), np.array(test_reals[0:ahead]) + 50, '--k',
+             label=u"实际活动 + 50", linewidth=1)
+    plt.plot(range(-history_time_length, 0),
+             real[len(real) - ahead - history_time_length - 1: len(real) - ahead - 1],
+             '-b', label=u"历史活动", linewidth=1)
+    plt.xlabel(u"预测时间为正, 历史时间为负")
+    plt.ylabel(u"活动值")
+    plt.legend()
+    fig = plt.gcf()
+    plt.show()
+    lstm9_forecast_image_saved = True
+    if not lstm9_forecast_image_saved:
+        fig.savefig('./pictures/lstm9_forecast.png')
+    # 第 9 章 lstm 完.
 
 ContentFileNeedToUpdate = False
 if ContentFileNeedToUpdate:
