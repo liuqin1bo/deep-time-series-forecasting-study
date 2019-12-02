@@ -51,8 +51,7 @@ beta = 0.95
 y = pd.Series(y_0)
 print(y)
 for i in y.index:
-    print(y[i])
-# plt.plot(y)
+    print(y[i])  # plt.plot(y)
 # plt.show()
 num = 10
 for i in range(num):
@@ -959,7 +958,7 @@ if Chapter6NeedToRun:
 
 Chapter9NeedToRun = [False, True][1]
 if Chapter9NeedToRun:
-    # 第9章 LSTM
+    # 第9章  LSTM
     # 广泛应用于语音,手写识别, 时序预测(周期性趋势的长短记忆信息学习)等
     # 我们应用lstm模型学习太阳黑子活动规律, 舒适区间为 (+/-)50
     import urllib
@@ -1014,96 +1013,96 @@ if Chapter9NeedToRun:
             pass
         def interrupted(signum, frame):
             raise InputTimeoutError
+    presentation = False
+    if presentation:
+        signal.signal(signal.SIGALRM, interrupted)
+        signal.alarm(1)  # 设置自动停留时间
+        try:
+            your_input = raw_input('请看lstm 记忆块 示意图, 1秒后自动跳过, 按任意键手动跳过:\n'
+                                   '可以访问\n'
+                                   'https://blog.csdn.net/shijing_0214/article/details/52081301\n'
+                                   '以获得更多信息.\n\n')
+        except InputTimeoutError:
+            print("\n观看结束.")
+            your_input = ''
+        signal.alarm(0)  # 读到键盘输入的话重置信号
+        print("\n您输入了: %s, 现在跳过lstm 记忆块示意图学习" % your_input)
+        time.sleep(2)
         
-    signal.signal(signal.SIGALRM, interrupted)
-    signal.alarm(300)  # 设置自动停留时间
-    try:
-        your_input = raw_input('请看lstm 记忆块 示意图, 300秒后自动跳过, 按任意键手动跳过:\n'
-                               '可以访问\n'
-                               'https://blog.csdn.net/shijing_0214/article/details/52081301\n'
-                               '以获得更多信息.\n\n')
-    except InputTimeoutError:
-        print("\n观看结束.")
-        your_input = ''
-    signal.alarm(0)  # 读到键盘输入的话重置信号
-    print("\n您输入了: %s, 现在跳过lstm 记忆块示意图学习" % your_input)
-    time.sleep(2)
-    
-    # 1 个记忆细胞, 3 个乘积门
-    # inner hard sigmoid function 可分段线性
-    
-    cec_1 = mpimg.imread("./pictures/cec_1.png")
-    plt.imshow(cec_1)
-    plt.axis('off')
-    plt.show()
-    signal.signal(signal.SIGALRM, interrupted)
-    signal.alarm(300)  # 设置自动停留时间
-    try:
-        your_input = raw_input('请看CEC 示意图1, 300秒后自动跳过, 按任意键手动跳过:\n'
-                               '可以访问\n'
-                               'https://deepai.org/machine-learning-glossary-and-terms/constant%20error%20carousel\n'
-                               '以获得更多信息.\n\n')
-    except InputTimeoutError:
-        print("\n观看结束.")
-        your_input = ''
-    signal.alarm(0)  # 读到键盘输入的话重置信号
-    print("\n您输入了: %s, 现在跳过CEC 示意图1 学习" % your_input)
-    time.sleep(2)
-    
-    
-    cec_2 = mpimg.imread("./pictures/cec_2.png")
-    plt.imshow(cec_2)
-    plt.axis('off')
-    plt.show()
-    signal.signal(signal.SIGALRM, interrupted)
-    signal.alarm(300)  # 设置自动停留时间
-    try:
-        your_input = raw_input('请看CEC 示意图2, 300秒后自动跳过, 按任意键手动跳过:\n'
-                               '可以访问\n'
-                               'https://www.quantinfo.com/Article/View/695.html\n'
-                               '以获得更多信息.\n\n')
-    except InputTimeoutError:
-        print("\n观看结束.")
-        your_input = ''
-    signal.alarm(0)  # 读到键盘输入的话重置信号
-    print("\n您输入了: %s, 现在跳过CEC 示意图2 学习" % your_input)
-    time.sleep(2)
-    
-    cec_3 = mpimg.imread("./pictures/cec_3.png")
-    plt.imshow(cec_3)
-    plt.axis('off')
-    plt.show()
-    signal.signal(signal.SIGALRM, interrupted)
-    signal.alarm(300)  # 设置自动停留时间
-    try:
-        your_input = raw_input('请看CEC 示意图3, 300秒后自动跳过, 按任意键手动跳过:\n'
-                               '可以访问\n'
-                               'https://www.quantinfo.com/Article/View/695.html\n'
-                               '以获得更多信息.\n\n')
-    except InputTimeoutError:
-        print("\n观看结束.")
-        your_input = ''
-    signal.alarm(0)  # 读到键盘输入的话重置信号
-    print("\n您输入了: %s, 现在跳过CEC 示意图3 学习" % your_input)
-    time.sleep(2)
-    
-    hard_sigmoid_image = mpimg.imread("./pictures/hard_sigmoid.png")
-    plt.imshow(hard_sigmoid_image)
-    plt.axis('off')
-    plt.show()
-    signal.signal(signal.SIGALRM, interrupted)
-    signal.alarm(300)  # 设置自动停留时间
-    try:
-        your_input = raw_input('请看hard_sigmoid 示意图, 300秒后自动跳过, 按任意键手动跳过:\n'
-                               '可以访问\n'
-                               'https://www.quantinfo.com/Article/View/695.html\n'
-                               '以获得更多信息.\n\n')
-    except InputTimeoutError:
-        print("\n观看结束.")
-        your_input = ''
-    signal.alarm(0)  # 读到键盘输入的话重置信号
-    print("\n您输入了: %s, 现在跳过hard_sigmoid 示意图 学习" % your_input)
-    time.sleep(2)
+        # 1 个记忆细胞, 3 个乘积门
+        # inner hard sigmoid function 可分段线性
+        
+        cec_1 = mpimg.imread("./pictures/cec_1.png")
+        plt.imshow(cec_1); plt.axis('off')
+        plt.show()
+        signal.signal(signal.SIGALRM, interrupted)
+        signal.alarm(1)  # 设置自动停留时间
+        try:
+            your_input = raw_input('请看CEC 示意图1, 1秒后自动跳过, 按任意键手动跳过:\n'
+                                   '可以访问\n'
+                                   'https://deepai.org/machine-learning-glossary-and-terms/constant%20error%20carousel\n'
+                                   '以获得更多信息.\n\n')
+        except InputTimeoutError:
+            print("\n观看结束.")
+            your_input = ''
+        signal.alarm(0)  # 读到键盘输入的话重置信号
+        print("\n您输入了: %s, 现在跳过CEC 示意图1 学习" % your_input)
+        time.sleep(2)
+        
+        
+        cec_2 = mpimg.imread("./pictures/cec_2.png")
+        plt.imshow(cec_2)
+        plt.axis('off')
+        plt.show()
+        signal.signal(signal.SIGALRM, interrupted)
+        signal.alarm(1)  # 设置自动停留时间
+        try:
+            your_input = raw_input('请看CEC 示意图2, 1秒后自动跳过, 按任意键手动跳过:\n'
+                                   '可以访问\n'
+                                   'https://www.quantinfo.com/Article/View/695.html\n'
+                                   '以获得更多信息.\n\n')
+        except InputTimeoutError:
+            print("\n观看结束.")
+            your_input = ''
+        signal.alarm(0)  # 读到键盘输入的话重置信号
+        print("\n您输入了: %s, 现在跳过CEC 示意图2 学习" % your_input)
+        time.sleep(2)
+        
+        cec_3 = mpimg.imread("./pictures/cec_3.png")
+        plt.imshow(cec_3)
+        plt.axis('off')
+        plt.show()
+        signal.signal(signal.SIGALRM, interrupted)
+        signal.alarm(1)  # 设置自动停留时间
+        try:
+            your_input = raw_input('请看CEC 示意图3, 1秒后自动跳过, 按任意键手动跳过:\n'
+                                   '可以访问\n'
+                                   'https://www.quantinfo.com/Article/View/695.html\n'
+                                   '以获得更多信息.\n\n')
+        except InputTimeoutError:
+            print("\n观看结束.")
+            your_input = ''
+        signal.alarm(0)  # 读到键盘输入的话重置信号
+        print("\n您输入了: %s, 现在跳过CEC 示意图3 学习" % your_input)
+        time.sleep(2)
+        
+        hard_sigmoid_image = mpimg.imread("./pictures/hard_sigmoid.png")
+        plt.imshow(hard_sigmoid_image)
+        plt.axis('off')
+        plt.show()
+        signal.signal(signal.SIGALRM, interrupted)
+        signal.alarm(1)  # 设置自动停留时间
+        try:
+            your_input = raw_input('请看hard_sigmoid 示意图, 1秒后自动跳过, 按任意键手动跳过:\n'
+                                   '可以访问\n'
+                                   'https://www.quantinfo.com/Article/View/695.html\n'
+                                   '以获得更多信息.\n\n')
+        except InputTimeoutError:
+            print("\n观看结束.")
+            your_input = ''
+        signal.alarm(0)  # 读到键盘输入的话重置信号
+        print("\n您输入了: %s, 现在跳过hard_sigmoid 示意图 学习" % your_input)
+        time.sleep(2)
     
     from sklearn import preprocessing
     scaler_x = preprocessing.MinMaxScaler(
@@ -1130,51 +1129,115 @@ if Chapter9NeedToRun:
     from keras.layers.recurrent import LSTM
     seed = 2019
     np.random.seed(seed)
-    lstm9 = Sequential()
-    lstm9.add(LSTM(output_dim=4,
-                   activation='tanh',
-                   inner_activation='hard_sigmoid',
-                   input_shape=(5,1)
-                   )
-              )
-    lstm9.add(Dense(output_dim=1, activation='linear'))
-    # 使用 rmsprop 自动调整学习速率
-    lstm9.compile(loss="mean_squared_error", optimizer="rmsprop")
-    # 时序不shuffle
-    lstm9.fit(x_train, y_train, batch_size=1, nb_epoch=1, shuffle=False)
-    
-    print(lstm9.summary())
-    score_train = lstm9.evaluate(x_train, y_train, batch_size=1)
-    score_test=lstm9.evaluate(x_test, y_test, batch_size=1)
-    print("训练误差是:", round(score_train, 4))
-    print("测试误差是:", round(score_test, 4))
-    forecast9 = lstm9.predict(x_test)
-    forecast9 = scaler_y.inverse_transform(np.array(forecast9).reshape(len(forecast9), 1))
-    forecast9 = np.array(forecast9).reshape(-1)
-    print("预测值是: ")
-    print(forecast9)
-    print("作图:显示部分历史时间数据\n")
-    real = np.array(data['yt'][0:3042]).reshape(-1)
-    test_reals = data['yt'][3043:3205].tolist()
-    history_time_length = 400
-    ahead = 162
-    plt.plot(range(0, ahead), forecast9, '-r', label=u"预测", linewidth=1)
-    plt.plot(range(0, ahead), test_reals[0:ahead], color='black', label=u"实际", linewidth=1)
-    plt.plot(range(0, ahead), np.array(test_reals[0:ahead]) - 50, '--k',
-             label=u"实际活动 - 50", linewidth=1)
-    plt.plot(range(0, ahead), np.array(test_reals[0:ahead]) + 50, '--k',
-             label=u"实际活动 + 50", linewidth=1)
-    plt.plot(range(-history_time_length, 0),
-             real[len(real) - ahead - history_time_length - 1: len(real) - ahead - 1],
-             '-b', label=u"历史活动", linewidth=1)
-    plt.xlabel(u"预测时间为正, 历史时间为负")
-    plt.ylabel(u"活动值")
-    plt.legend()
-    fig = plt.gcf()
-    plt.show()
-    lstm9_forecast_image_saved = True
-    if not lstm9_forecast_image_saved:
-        fig.savefig('./pictures/lstm9_forecast.png')
+    # 基础版 lstm(可以选择shuffle 为 True和False)
+    basic_lstm = False
+    if basic_lstm:
+        lstm9 = Sequential()
+        lstm9.add(LSTM(output_dim=4,
+                       activation='tanh',
+                       inner_activation='hard_sigmoid',
+                       input_shape=(5,1)
+                       )
+                  )
+        lstm9.add(Dense(output_dim=1, activation='linear'))
+        # 使用 rmsprop 自动调整学习速率
+        lstm9.compile(loss="mean_squared_error", optimizer="rmsprop")
+        # 时序不shuffle
+        lstm9.fit(x_train, y_train, batch_size=1, nb_epoch=5, shuffle=False)
+        
+        print(lstm9.summary())
+        score_train = lstm9.evaluate(x_train, y_train, batch_size=1)
+        score_test=lstm9.evaluate(x_test, y_test, batch_size=1)
+        print("训练误差是:", round(score_train, 4))
+        print("测试误差是:", round(score_test, 4))
+        forecast9 = lstm9.predict(x_test)
+        forecast9 = scaler_y.inverse_transform(np.array(forecast9).reshape(len(forecast9), 1))
+        forecast9 = np.array(forecast9).reshape(-1)
+        print("预测值是: ")
+        print(forecast9)
+        print("作图:显示部分历史时间数据\n")
+        real = np.array(data['yt'][0:3042]).reshape(-1)
+        test_reals = data['yt'][3043:3205].tolist()
+        history_time_length = 400
+        ahead = 162
+        plt.plot(range(0, ahead), forecast9, '-r', label=u"预测", linewidth=1)
+        plt.plot(range(0, ahead), test_reals[0:ahead], color='black', label=u"实际", linewidth=1)
+        plt.plot(range(0, ahead), np.array(test_reals[0:ahead]) - 50, '--k',
+                 label=u"实际活动 - 50", linewidth=1)
+        plt.plot(range(0, ahead), np.array(test_reals[0:ahead]) + 50, '--k',
+                 label=u"实际活动 + 50", linewidth=1)
+        plt.plot(range(-history_time_length, 0),
+                 real[len(real) - ahead - history_time_length - 1: len(real) - ahead - 1],
+                 '-b', label=u"历史活动", linewidth=1)
+        plt.xlabel(u"预测时间为正, 历史时间为负")
+        plt.ylabel(u"活动值")
+        plt.legend()
+        fig = plt.gcf()
+        plt.show()
+        basic_lstm9_forecast_image_saved = True
+        if not basic_lstm9_forecast_image_saved:
+            fig.savefig('./pictures/lstm9_forecast_basic.png')
+    # 高级一点的lstm (引入 statefulness, 也可以配置shuffle 值为True 和False)
+    advanced_lstm = True
+    if advanced_lstm:
+        lstm9 = Sequential()
+        # 设置stateful 为 True
+        lstm9.add(LSTM(output_dim=4,
+                       stateful=True,
+                       activation='tanh',
+                       inner_activation='hard_sigmoid',
+                       batch_input_shape=(2, 5, 1)
+                       )
+                  )
+        lstm9.add(Dense(output_dim=1, activation='linear'))
+        # 使用 rmsprop 自动调整学习速率
+        lstm9.compile(loss="mean_squared_error", optimizer="rmsprop")
+        # shuffle
+        end_point = len(x_train)
+        start_point = end_point - 500
+        for i in range(0, 10):
+            print("Fitting example %s: " % (i+1))
+            # verbose = 0，在控制台没有任何输出
+            # verbose = 1 ：显示进度条
+            # verbose =2：为每个epoch输出一行记录
+            lstm9.fit(x_train[start_point: end_point],
+                      y_train[start_point: end_point],
+                      batch_size=2, nb_epoch=1, verbose=1, shuffle=True)
+            lstm9.reset_states()
+        # print(lstm9.summary())
+        score_train = lstm9.evaluate(x_train[start_point: end_point],
+                                     y_train[start_point: end_point],
+                                     batch_size=2)
+        score_test=lstm9.evaluate(x_test, y_test, batch_size=2)
+        print("训练误差是:", round(score_train, 4))
+        print("测试误差是:", round(score_test, 4))
+        forecast9 = lstm9.predict(x_test, batch_size=2)
+        forecast9 = scaler_y.inverse_transform(np.array(forecast9).reshape(len(forecast9), 1))
+        forecast9 = np.array(forecast9).reshape(-1)
+        print("预测值是: ")
+        print(forecast9)
+        print("作图:显示部分历史时间数据\n")
+        real = np.array(data['yt'][0:3042]).reshape(-1)
+        test_reals = data['yt'][3043:3205].tolist()
+        history_time_length = 400
+        ahead = 162
+        plt.plot(range(0, ahead), forecast9, '-r', label=u"预测", linewidth=1)
+        plt.plot(range(0, ahead), test_reals[0:ahead], color='black', label=u"实际", linewidth=1)
+        plt.plot(range(0, ahead), np.array(test_reals[0:ahead]) - 50, '--k',
+                 label=u"实际活动 - 50", linewidth=1)
+        plt.plot(range(0, ahead), np.array(test_reals[0:ahead]) + 50, '--k',
+                 label=u"实际活动 + 50", linewidth=1)
+        plt.plot(range(-history_time_length, 0),
+                 real[len(real) - ahead - history_time_length - 1: len(real) - ahead - 1],
+                 '-b', label=u"历史活动", linewidth=1)
+        plt.xlabel(u"预测时间为正, 历史时间为负")
+        plt.ylabel(u"活动值")
+        plt.legend()
+        fig = plt.gcf()
+        plt.show()
+        advanced_lstm9_forecast_image_saved = True
+        if not advanced_lstm9_forecast_image_saved:
+            fig.savefig('./pictures/lstm9_forecast_advanced.png')
     # 第 9 章 lstm 完.
 
 ContentFileNeedToUpdate = False
