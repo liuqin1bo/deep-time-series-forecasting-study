@@ -956,7 +956,7 @@ if Chapter6NeedToRun:
     fig.savefig('./pictures/ernn6_forecast.png')
     # 第6章完成.
 
-Chapter9NeedToRun = [False, True][1]
+Chapter9NeedToRun = [False, True][0]
 if Chapter9NeedToRun:
     # 第9章  LSTM
     # 广泛应用于语音,手写识别, 时序预测(周期性趋势的长短记忆信息学习)等
@@ -1239,6 +1239,207 @@ if Chapter9NeedToRun:
         if not advanced_lstm9_forecast_image_saved:
             fig.savefig('./pictures/lstm9_forecast_advanced.png')
     # 第 9 章 lstm 完.
+
+
+Chapter10NeedToRun = [False, True][1]
+if Chapter10NeedToRun:
+    print("进入第10章, GRU 模型的学习和使用.")
+    # 第10章, GRU 入门
+    # 一个gru结构描述比较透彻的链接(y_t 的计算 漏掉了,显然神经网络的做法是 y_t = h_t * Weight) 和 截图
+    import matplotlib.image as mpimg  # 用于加载图片
+    import matplotlib as mpl
+    mpl.use('Gtk3Agg')
+    print("查看链接以获取详细的描述: \nhttps://zhuanlan.zhihu.com/p/32481747")
+    gru_structure_image_1 = plt.imread("./pictures/gru_structure_1.png")
+    plt.imshow(gru_structure_image_1)  #分辨率太低, 采用下面的方式重新绘图 动态画图依赖包问题
+    plt.axis('off')
+    plt.show()
+    time.sleep(1)
+    gru_structure_image_2 = mpimg.imread("./pictures/gru_structure_2.png")
+    plt.imshow(gru_structure_image_2)
+    plt.axis('off')
+    plt.show()
+    time.sleep(1)
+    gru_structure_image_3 = mpimg.imread("./pictures/gru_structure_3.png")
+    plt.imshow(gru_structure_image_3)
+    plt.axis('off')
+    plt.show()
+    """
+    # get the dimensions
+    ypixels, xpixels, bands = gru_structure_image_1.shape
+    # get the size in inches
+    dpi = 72.
+    xinch = xpixels / dpi
+    yinch = ypixels / dpi
+    # plot and save in the same size as the original
+    fig = plt.figure(figsize=(xinch,yinch/0.8))
+    ax = fig.add_axes([0, 0, 1, 1])
+    ax.axis('off')
+    ax.imshow(gru_structure_image_1, interpolation='none')
+    plt.show()
+    time.sleep(1)
+    gru_structure_image_2 = mpimg.imread("./pictures/gru_structure_2.png")
+    plt.imshow(gru_structure_image_2)
+    plt.axis('off')
+    plt.show()
+    time.sleep(1)
+    gru_structure_image_3 = mpimg.imread("./pictures/gru_structure_3.png")
+    plt.imshow(gru_structure_image_3)
+    plt.axis('off')
+    plt.show()
+    """
+    time.sleep(1)
+    
+    # 我们现在就使用GRU来进行建模预测
+    loc = "./data/monthly_sunspots.csv"
+    #data.to_csv(loc, index=False)
+    data_csv = pd.read_csv(loc, header=None)
+    yt = data_csv.iloc[0:3210, 3]
+    yt_1 = yt.shift(1)
+    yt_2 = yt.shift(2)
+    yt_3 = yt.shift(3)
+    yt_4 = yt.shift(4)
+    yt_5 = yt.shift(5)
+    data = pd.concat([yt, yt_1, yt_2, yt_3, yt_4, yt_5], axis=1)
+    data.columns = ["yt", "yt_1", "yt_2", "yt_3", "yt_4","yt_5"]
+    # yt_n 取前n个月的数据, 于是我们获取到的数据含有nan值(5行)
+    console_print = "yt_n 取前n个月的数据, 于是我们获取到的数据含有nan值(5行)\n"
+    print(console_print)
+    print(data.head(6))
+    data = data.dropna()
+    y = data['yt']
+    cols = ["yt_1", "yt_2", "yt_3", "yt_4","yt_5"]
+    x = data[cols]
+    from sklearn import preprocessing
+    scaler_x = preprocessing.MinMaxScaler(
+        feature_range=(-1, 1))
+    x = np.array(x).reshape(len(x), 5)
+    x = scaler_x.fit_transform(x)
+    
+    scaler_y = preprocessing.MinMaxScaler(
+        feature_range=(-1, 1))
+    y = np.array(y).reshape(len(y), 1)
+    #y = np.log(y) 为什么不取对数呢
+    y = scaler_y.fit_transform(y)
+    train_end = 3042
+    x_train = x[0:train_end, ]
+    x_test = x[train_end + 1: 3205, ]
+    y_train = y[0:train_end]
+    y_test = y[train_end + 1:3205]
+    x_train = x_train.reshape(x_train.shape + (1,))
+    x_test = x_test.reshape(x_test.shape + (1,))
+    
+    from keras.models import Sequential
+    from keras.layers.core import Dense, Activation
+    from keras.layers.recurrent import GRU
+    seed = 2019
+    gru10 = Sequential()
+    gru10.add(GRU(output_dim=4,
+                  return_sequences=False,
+                  activation='tanh',
+                  inner_activation='hard_sigmoid',
+                  input_shape=(5, 1)
+                )
+            )
+    gru10.add(Dense(output_dim=1, activation='linear'))
+    gru10.compile(loss="mean_squared_error", optimizer="rmsprop")
+    # 注: 如过需要多维数据预测, 则需要将 return_sequences 设置为 True
+    end_point = len(x_train)
+    start_point = end_point - 500
+    gru10.fit(x_train[start_point: end_point],
+              y_train[start_point: end_point],
+              batch_size=2, nb_epoch=10, verbose=1, shuffle=False)
+    print(gru10.summary())
+    score_train = gru10.evaluate(x_train[start_point: end_point],
+                                 y_train[start_point: end_point],
+                                 batch_size=2)
+    score_test=gru10.evaluate(x_test, y_test, batch_size=2)
+    print("GRU 训练误差是:", round(score_train, 4))
+    print("GRU 测试误差是:", round(score_test, 4))
+    forecast10 = gru10.predict(x_test)
+    forecast10 = scaler_y.inverse_transform(np.array(forecast10).reshape(len(forecast10), 1))
+    forecast10 = np.array(forecast10).reshape(-1)
+    print("预测值是: ")
+    print(forecast10)
+    print("作图:显示部分历史时间数据\n")
+    real = np.array(data['yt'][0:3042]).reshape(-1)
+    test_reals = data['yt'][3043:3205].tolist()
+    history_time_length = 400
+    ahead = 162
+    plt.plot(range(0, ahead), forecast10, '-r', label=u"预测", linewidth=1)
+    plt.plot(range(0, ahead), test_reals[0:ahead], color='black', label=u"实际", linewidth=1)
+    plt.plot(range(0, ahead), np.array(test_reals[0:ahead]) - 50, '--k',
+             label=u"实际活动 - 50", linewidth=1)
+    plt.plot(range(0, ahead), np.array(test_reals[0:ahead]) + 50, '--k',
+             label=u"实际活动 + 50", linewidth=1)
+    plt.plot(range(-history_time_length, 0),
+             real[len(real) - ahead - history_time_length - 1: len(real) - ahead - 1],
+             '-b', label=u"历史活动", linewidth=1)
+    plt.xlabel(u"预测时间为正, 历史时间为负")
+    plt.ylabel(u"活动值")
+    plt.title(u"GRU 模型预测")
+    plt.legend()
+    fig = plt.gcf()
+    plt.show()
+    gru10_forecast_image_saved = True
+    if not gru10_forecast_image_saved:
+        fig.savefig('./pictures/gru10_forecast_image.png')
+        
+    # 现在, 我们可以调整train的形状实现一个特征, 向前预测4步
+    x_train = np.reshape(x_train, (x_train.shape[0], 1, x_train.shape[1]))
+    x_test = np.reshape(x_test, (x_test.shape[0], 1, x_test.shape[1]))
+    seed = 2019
+    gru10 = Sequential()
+    gru10.add(GRU(output_dim=4,
+                  return_sequences=False,
+                  activation='tanh',
+                  inner_activation='hard_sigmoid',
+                  input_shape=(1, 5)
+                )
+            )
+    gru10.add(Dense(output_dim=1, activation='linear'))
+    gru10.compile(loss="mean_squared_error", optimizer="rmsprop")
+    # 注: 如过需要多维数据预测, 则需要将 return_sequences 设置为 True
+    end_point = len(x_train)
+    start_point = end_point - 500
+    gru10.fit(x_train[start_point: end_point],
+              y_train[start_point: end_point],
+              batch_size=2, nb_epoch=10, verbose=1, shuffle=False)
+    print(gru10.summary())
+    score_train = gru10.evaluate(x_train[start_point: end_point],
+                                 y_train[start_point: end_point],
+                                 batch_size=2)
+    score_test=gru10.evaluate(x_test, y_test, batch_size=2)
+    print("GRU 训练误差是:", round(score_train, 4))
+    print("GRU 测试误差是:", round(score_test, 4))
+    forecast10 = gru10.predict(x_test)
+    forecast10 = scaler_y.inverse_transform(np.array(forecast10).reshape(len(forecast10), 1))
+    forecast10 = np.array(forecast10).reshape(-1)
+    print("预测值是: ")
+    print(forecast10)
+    print("作图:显示部分历史时间数据\n")
+    real = np.array(data['yt'][0:3042]).reshape(-1)
+    test_reals = data['yt'][3043:3205].tolist()
+    history_time_length = 400
+    ahead = 162
+    plt.plot(range(0, ahead), forecast10, '-r', label=u"预测", linewidth=1)
+    plt.plot(range(0, ahead), test_reals[0:ahead], color='black', label=u"实际", linewidth=1)
+    plt.plot(range(0, ahead), np.array(test_reals[0:ahead]) - 50, '--k',
+             label=u"实际活动 - 50", linewidth=1)
+    plt.plot(range(0, ahead), np.array(test_reals[0:ahead]) + 50, '--k',
+             label=u"实际活动 + 50", linewidth=1)
+    plt.plot(range(-history_time_length, 0),
+             real[len(real) - ahead - history_time_length - 1: len(real) - ahead - 1],
+             '-b', label=u"历史活动", linewidth=1)
+    plt.xlabel(u"预测时间为正, 历史时间为负")
+    plt.ylabel(u"活动值")
+    plt.title(u"GRU 模型预测")
+    plt.legend()
+    fig = plt.gcf()
+    plt.show()
+    gru10_forecast_image2_saved = True
+    if not gru10_forecast_image2_saved:
+        fig.savefig('./pictures/gru10_forecast_image2.png')
 
 ContentFileNeedToUpdate = False
 if ContentFileNeedToUpdate:
