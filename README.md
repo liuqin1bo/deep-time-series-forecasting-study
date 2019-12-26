@@ -16,7 +16,7 @@ python=2.7 环境下 pip 安装 neuralpy (需要解决一些冲突问题)
 * `pip install keras`
 * `pip install theano`
 * `pip install nnet-ts`
-* `conda install tensorflow`
+* `conda install tensorflow`-
 * `pip install pyneurgen`
 
 #### 2. 本项目参考书目为 `Deep Time Series Forecasting With Python`, 作者是 N.D. Lewis

@@ -24,6 +24,13 @@ import random
 import warnings
 
 warnings.filterwarnings('ignore')
+np.set_printoptions(threshold=np.infty)
+pd.options.display.float_format = '{:,.6f}'.format
+pd.set_option('display.max_rows', 5000)
+pd.set_option('display.max_columns', 500)
+pd.set_option('display.width', 1000)
+
+
 
 '''
 formula
@@ -1241,7 +1248,7 @@ if Chapter9NeedToRun:
     # 第 9 章 lstm 完.
 
 
-Chapter10NeedToRun = [False, True][1]
+Chapter10NeedToRun = [False, True][0]
 if Chapter10NeedToRun:
     print("进入第10章, GRU 模型的学习和使用.")
     # 第10章, GRU 入门
@@ -1441,6 +1448,143 @@ if Chapter10NeedToRun:
     if not gru10_forecast_image2_saved:
         fig.savefig('./pictures/gru10_forecast_image2.png')
 
+Chapter11NeedToRun = [False, True][1]
+if Chapter11NeedToRun:
+    url = "http://www.economicswebinstitute.org/data/stockindexes.zip"
+    loc = "./data/stockindexes.zip"
+    stockindexes_has_been_downloaded = True
+    if not stockindexes_has_been_downloaded:
+        import urllib
+        urllib.urlretrieve(url, loc)
+    else:
+        print("The stockindexes zip data is already downloaded, we don't need to redownload it.")
+    unzip_stockindexes_data_created = False
+    if not unzip_stockindexes_data_created:
+        import zipfile
+        dest_location = "./data"
+        unzip = zipfile.ZipFile(loc, 'r')
+        unzip.extractall(dest_location)
+        unzip.close()
+    loc = "./data/stockindexes.xls"
+    excel_file = pd.ExcelFile(loc)
+    print(excel_file.sheet_names)
+    ftse_data = excel_file.parse('FTSE100', header=None)
+    ftse_data.columns = ['date', 'index']
+    # dj 指 Dow Jones 工业指数
+    dj_data = excel_file.parse('Dow Jones Industrial', header=None)
+    dj_data.columns = ['date', 'index']
+    print(ftse_data.head(5))
+    print(dj_data.head(5))
+    ftse100 = ftse_data.iloc[5:, 1]
+    dj = dj_data.iloc[5:, 1]
+    print(ftse100.head())
+    print('ftse100 描述:')
+    print(len(ftse100))
+    print(ftse100.tail())
+    print(dj.head())
+    print(dj.tail())
+    # 合并target 变量
+    yt = pd.concat([ftse100, dj], axis=1)
+    yt.columns = ['ftse100', 'dj']
+    yt = yt.reset_index(drop=True)
+    
+    print("合并target 变量 后的 yt")
+    print(yt.head(10))
+    yt = yt.pct_change(1)
+    print("pct_change(1) of yt")
+    print(yt.head(10))
+    win = 30
+    # vol_t = yt.rolling(window=win, min_periods=1, center=True).std()
+    vol_t = yt.rolling(window=win, center=True).std()
+    print("vol_t is:\n")
+    print(vol_t.head(50))
+    # 产生 hand crafted 特征
+    x1 = np.log(vol_t.shift(1)/vol_t.shift(2)) * vol_t.shift(1)
+    x2 = np.log(vol_t.shift(1)/vol_t.shift(3)) * vol_t.shift(1)
+    x3 = np.log(vol_t.shift(1)/vol_t.shift(4)) * vol_t.shift(1)
+    x4 = np.log(vol_t.shift(1)/vol_t.shift(5)) * vol_t.shift(1)
+    x5 = np.log(vol_t.shift(1)/vol_t.shift(6)) * vol_t.shift(1)
+    data = pd.concat([vol_t, x1, x2, x3, x4, x5], axis=1)
+    data.columns = ['ftse_t', 'dj_t',
+                    'ftse_t_1', 'dj_t_1',
+                    'ftse_t_2', 'dj_t_2',
+                    'ftse_t_3', 'dj_t_3',
+                    'ftse_t_4', 'dj_t_4',
+                    'ftse_t_5', 'dj_t_5']
+    print(data.head(40))
+    print(data.size, len(data))
+    print(data.info())
+    # 去掉 null 数据, 数据长度为 1353 -22 = 1331
+    data = data.dropna()
+    print(data.head(40))
+    print(data.size, len(data))
+    print(data.info())
+    cols_y = ['ftse_t', 'dj_t']
+    y = data[cols_y]
+    cols_x = ['ftse_t_1', 'dj_t_1',
+              'ftse_t_2', 'dj_t_2',
+              'ftse_t_3', 'dj_t_3',
+              'ftse_t_4', 'dj_t_4',
+              'ftse_t_5', 'dj_t_5']
+    x = data[cols_x]
+    from sklearn import preprocessing
+    num_attrib = 10
+    scaler_x = preprocessing.MinMaxScaler(
+        feature_range=(-1, 1)
+    )
+    x = np.array(x).reshape((len(x), num_attrib))
+    x = scaler_x.fit_transform(x)
+    
+    num_response = 2
+    scaler_y = preprocessing.MinMaxScaler(
+        feature_range=(0, 1)
+    )
+    y = np.array(y).reshape((len(y), num_response))
+    y = scaler_y.fit_transform(y)
+    
+    # 训练和测试集
+    train_end = 1131
+    data_end = len(data)  # 1341
+    x_train = x[0:train_end, ]
+    x_test = x[train_end:data_end, ]
+    y_train = y[0:train_end, ]
+    y_test =y[train_end:data_end, ]
+    x_train = np.reshape(x_train, (x_train.shape[0], 1, x_train.shape[1]))
+    x_test = np.reshape(x_test, (x_test.shape[0], 1, x_test.shape[1]))
+    print("shape of x_train is : %s" % str(x_train.shape))
+    print("shape of x_test is : %s" % str(x_test.shape))
+    
+    #配置模型 并 Fit
+    from keras.models import Sequential
+    from keras.layers.core import Dense, Activation
+    from keras.layers.recurrent import SimpleRNN
+    from keras.optimizers import SGD
+    seed = 2019
+    num_epochs = 5
+    np.random.seed(seed)
+    fit11 = Sequential()
+    fit11.add(SimpleRNN(
+        output_dim=10,
+        activation='sigmoid',
+        input_shape=(1,num_attrib)
+    ))
+    fit11.add(Dense(
+        output_dim=num_response,
+        activation='linear'
+    ))
+    sgd = SGD(lr=0.1, momentum=0.9, nesterov=True)
+    fit11.compile(loss='mean_squared_error', optimizer=sgd)
+    fit11.fit(x_train, y_train, batch_size=1, nb_epoch=num_epochs)
+    
+    score_train = fit11.evaluate(x_train, y_train, batch_size=1)
+    score_test = fit11.evaluate(x_test, y_test, batch_size=1)
+    print("in train MSE = ", round(score_train, 5))
+    print("in test MSE = ", round(score_test, 5))
+    forecast11 = fit11.predict(x_test)
+    print(forecast11)
+    forecast11 = scaler_y.inverse_transform(
+        np.array(forecast11).reshape((len(forecast11), 2)))
+    print(forecast11)
 ContentFileNeedToUpdate = False
 if ContentFileNeedToUpdate:
     Content_txt_file = open("./Context.txt", "w")
